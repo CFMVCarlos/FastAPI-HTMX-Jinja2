@@ -1,0 +1,345 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Interactive HTMX-Jinja2-FastAPI Example Template</title>
+
+    <!-- Include the HTMX library -->
+    <script src="/static/js/htmx.min.js"></script>
+
+    <!-- Include the HTMX custom CSS -->
+    <link rel="stylesheet" href="/static/css/styles.css" />
+
+    <!-- Include HTMX extensions -->
+    <!-- Class Tools extension for HTMX -->
+    <script src="https://unpkg.com/htmx.org/dist/ext/class-tools.js"></script>
+    <!-- Server Sent Events extension for HTMX -->
+    <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
+    <!-- WebSockets extension for HTMX -->
+    <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
+    <!-- Loading States extension for HTMX -->
+    <script src="https://unpkg.com/htmx.org/dist/ext/loading-states.js"></script>
+    <!-- Path Dependencies extension for HTMX -->
+    <script src="https://unpkg.com/htmx.org/dist/ext/path-deps.js"></script>
+    <!-- Include the preload extension for HTMX -->
+    <script src="https://unpkg.com/htmx.org/dist/ext/preload.js"></script>
+    <!-- Include the remove-me extension for HTMX -->
+    <script src="https://unpkg.com/htmx.org/dist/ext/remove-me.js"></script>
+    <!-- Include the SweetAlert2 library -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+      // Enable logging for all HTMX requests
+      // htmx.logAll();
+
+      // Monitor events on the Element (use in the console)
+      // monitorEvents(htmx.find("#response_span_text_to_edit"));
+    </script>
+  </head>
+
+  <body hx-ext="class-tools, loading-states, preload, remove-me">
+    <!-- Hidden message to be displayed by hx-swap-oob="true" -->
+    <div id="message"></div>
+    <!-- Title of the page -->
+    <h1 id="select_h1">Hello, world!</h1>
+    <!-- Buttons to change the color of the text -->
+    <p id="p1">This is my HTML template.</p>
+    <button
+      hx-post="/builtin/button_click/red"
+      hx-target="#p1"
+      hx-swap="outerHTML"
+    >
+      RED
+    </button>
+    <button
+      hx-post="/builtin/button_click/blue"
+      hx-target="#p1"
+      hx-swap="outerHTML"
+    >
+      BLUE
+    </button>
+    <button
+      hx-post="/builtin/button_click/green"
+      hx-target="#p1"
+      hx-swap="outerHTML"
+    >
+      GREEN
+    </button>
+    <p></p>
+    <!-- Button to toggle the class of the div using the class-tools extension -->
+    <div class="demo" classes="toggle faded:1s & toggle red:1s">
+      Toggle Demo
+    </div>
+    <p></p>
+    <!-- Button to add a new element to the the bottom of the body and using hx-swap-oob="true" -->
+    <button hx-get="/builtin/element" hx-target="body" hx-swap="beforeend">
+      NEW ELEMENT
+    </button>
+    <p></p>
+    <!-- Button to select an element and swap it with the specified content of the response -->
+    <button
+      hx-get="/builtin/select_element"
+      hx-select="#select_div"
+      hx-target="body"
+      hx-swap="beforeend"
+    >
+      SELECT ELEMENT
+    </button>
+    <p></p>
+    <!-- Button to select an element and swap it with the specified content of the response and select other elements to swap in using hx-select-oob -->
+    <button
+      id="select_button_oob"
+      hx-get="/builtin/select_element_oob"
+      hx-select="#select_button_oob"
+      hx-select-oob="#select_h1,#p1:innerHTML"
+    >
+      Swap this button
+    </button>
+    <p></p>
+    <!-- Button to include the value of the input in the request -->
+    <input
+      name="include_input"
+      type="number"
+      value="10"
+      placeholder="insert number"
+      style="width: 3em"
+    />
+    <button hx-post="/builtin/include" hx-include="[name='include_input']">
+      Include information
+    </button>
+    <p></p>
+    <!-- Button to include the values in the request-->
+    <div
+      hx-get="/builtin/vals_example"
+      hx-trigger="keyup"
+      hx-swap="beforeend"
+      hx-vals='js:{lastKey: event.key, extra_info: "all good"}'
+    >
+      <input type="text" placeholder="Type anything " />
+    </div>
+    <p></p>
+    <!-- Button to confirm delete action -->
+    <button
+      id="button_delete"
+      hx-delete="/"
+      hx-swap="outerHTML swap:1s"
+      hx-confirm="Are you sure you wish to delete your account?"
+    >
+      Delete My Account
+    </button>
+    <p></p>
+    <!-- Use pf hx-boost to add a new div to the body -->
+    <div
+      hx-boost="true"
+      hx-swap="beforeend show:this"
+      hx-target="this"
+      hx-push-url="false"
+    >
+      <a href="/builtin/beautiful_div">Generate Beautiful Divs</a>
+    </div>
+    <p></p>
+    <!-- Use of hx-sse to connect to a server-sent event -->
+    <div hx-ext="sse" sse-connect="/extensions/stream" sse-swap="sse_event">
+      Contents of this box will be updated in real time with every SSE message
+      received from the chatroom.
+    </div>
+    <div hx-ext="sse" sse-connect="/extensions/stream">
+      <div
+        hx-get="/extensions/sse_event_triggered"
+        hx-trigger="sse:sse_event_10"
+        hx-vals="js:{dataFromSSE: event.data}"
+      >
+        This content will be updated every 10th message
+      </div>
+    </div>
+    <p></p>
+    <!-- Use of hx-ws to connect to a web socket -->
+    <div hx-ext="ws" ws-connect="/extensions/ws">
+      <form ws-send>
+        <input
+          id="web_socket_input"
+          name="chat_message"
+          placeholder="Web Socket Phrase"
+        />
+      </form>
+      <div id="content"></div>
+    </div>
+    <p></p>
+    <!-- Use of empty response on a message -->
+    <button hx-post="/builtin/response_allow">Allow changes</button>
+    <button
+      id="response_change_button"
+      hx-post="/builtin/response_change"
+      hx-target="#response_span_text_to_edit"
+    >
+      Change Text
+    </button>
+    <span id="response_span_text_to_edit">Example Text Here</span>
+    <p></p>
+    <!-- Use of loading-states extension -->
+    <div data-loading-states data-loading-target="loading_states_span">
+      <button hx-post="/extensions/loading_states" data-loading-disable>
+        Refresh
+      </button>
+      <span id="loading_states_span" data-loading data-loading-class="red"
+        >Refresh</span
+      >
+    </div>
+    <form
+      hx-post="/extensions/loading_states"
+      data-loading-target="#loading"
+      data-loading-states
+    >
+      <button type="submit" data-loading-delay="1000" data-loading-disable>
+        State Submit
+      </button>
+      <div id="loading" data-loading data-loading-class="red">Loading ...</div>
+    </form>
+    <p></p>
+    <!-- Use of path-deps extension -->
+    <div hx-ext="path-deps">
+      <button hx-post="/extensions/path_deps" hx-swap="none">
+        Post To List
+      </button>
+      <ul
+        hx-get="/extensions/path_deps"
+        hx-trigger="path-deps"
+        path-deps="/extensions/path_deps"
+        hx-swap="beforeend"
+      ></ul>
+    </div>
+    <p></p>
+    <!-- Use of preload extension -->
+    <div data-loading-states>
+      <button hx-get="/extensions/loading_states" preload="mousedown">
+        Click me for preload
+      </button>
+    </div>
+    <p></p>
+    <!-- Use of remove-me extension -->
+    <div remove-me="10s">I will be gone after 10 seocnds have passed</div>
+    <p remove-me="10s"></p>
+    <!-- Use of hx-on:* to execute javascript code on particular HTMX events -->
+    <button
+      hx-get="/builtin/info"
+      hx-on::before-request="console.log(event);"
+      hx-on::after-request="htmx.addClass(this, 'blue',2000); htmx.remove(this,3000); htmx.removeClass(this,'red',1000)"
+      class="red"
+    >
+      Get Info!
+    </button>
+  </body>
+</html>
+<p></p>
+<!-- Button to confirm action with SweetAlert2 -->
+<button
+  id="sweet_alert_button"
+  hx-get="/extensions/sweet_alert_confirmed"
+  hx-trigger="confirmed"
+  onClick="Swal.fire({title: 'Confirm', text:'Do you want to continue?'}).then(function(result){
+            console.log(result);
+            if(result.isConfirmed){
+              htmx.trigger(htmx.find('#sweet_alert_button'), 'confirmed');  
+            } 
+        })"
+>
+  Click Me
+</button>
+
+<!-- Jinja2 template syntax -->
+{% if bool_condition1 %}
+<div>
+  <p>Condition 1 overwrites both 2 and 3</p>
+</div>
+{% elif bool_condition2 %}
+<div>
+  <p>Condition 2 only overwrites 3</p>
+</div>
+{% elif bool_condition3 %}
+<div>
+  <p>Condition 3 is being triggered if both 1 and 2 are false</p>
+</div>
+{% else %}
+<div>
+  <p>None of the conditions are being triggered</p>
+</div>
+{% endif %}
+<p>
+  Index Variables: {{ bool_condition1 }}/{{ bool_condition2 }}/{{
+  bool_condition3 }}
+</p>
+
+{% include "extra_html.html" %}
+
+<p>List of people below:</p>
+<ul>
+  {% for person in some_list %}
+  <li>{{ person.name }} is {{ person.age }} years old</li>
+  {% endfor %}
+</ul>
+
+<!-- hx-indicator example -->
+<div>
+  <span>Only one button will trigger</span>
+  <button
+    hx-get="/builtin/htmx_headers"
+    hx-target="next span"
+    hx-indicator="#spinner"
+  >
+    X
+  </button>
+  <button
+    id="htmx_header_button_id"
+    hx-get="/builtin/htmx_headers"
+    hx-target="next span"
+    hx-indicator="#spinner"
+  >
+    Y
+  </button>
+  <button
+    hx-get="/builtin/htmx_headers"
+    hx-target="next span"
+    hx-indicator="#spinner"
+  >
+    Z
+  </button>
+  <img
+    id="spinner"
+    class="htmx-indicator"
+    src="/static/img/spinning-circle.gif"
+    alt="Request In Flight..."
+    style="height: 21px"
+  />
+  <span class="red"></span>
+</div>
+
+<!-- File download example -->
+<a hx-boost="false" href="/builtin/file_download" download="surprise_party.png"
+  >Archive Ready! Click here to download. &downarrow;</a
+>
+
+<!-- Requests synchronization example -->
+<p></p>
+<div hx-target="next span" hx-sync="this:queue last">
+  <button hx-get="/builtin/sync_first">First Button</button>
+  <button hx-get="/builtin/sync_second">Second Button</button>
+  <span>Who will target me correctly?</span>
+</div>
+
+<!-- Trigger event from the server -->
+<p></p>
+<div id="event_triggered_div">
+  <button hx-get="/builtin/server_event_trigger">
+    Server will trigger event
+    <img
+      class="my-indicator-custom"
+      src="/static/img/spinning-circle.gif"
+      alt="Request In Flight..."
+    />
+  </button>
+  <span
+    hx-get="/builtin/sync_first"
+    hx-trigger="server_event_triggered from:closest div"
+    hx-indicator="previous img"
+    >The server will trigger me after 5 clicks!</span
+  >
+</div>

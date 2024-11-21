@@ -1,0 +1,82 @@
+/* Styles for color-changing button */
+.smooth {
+  transition: color 1s ease-in;
+}
+
+.red {
+  color: red;
+}
+
+.blue {
+  color: blue;
+}
+
+.green {
+  color: green;
+}
+
+/* Fade in new elements */
+.fade-me-in.htmx-added {
+  opacity: 0;
+}
+
+.fade-me-in {
+  opacity: 1;
+  transition: opacity 1s ease-in;
+}
+
+/* Fade out old elements */
+.demo {
+  opacity: 1;
+  color: black;
+  transition: opacity 1s ease-in, color 1s ease-in;
+}
+
+.demo.faded {
+  opacity: 0.3;
+}
+
+.demo.red {
+  color: red;
+}
+
+.demo.blue {
+  color: blue;
+}
+
+.demo.green {
+  color: green;
+}
+
+/* Delete button styles */
+#button_delete,
+#button_delete_sweet {
+  opacity: 1;
+}
+
+#button_delete.htmx-swapping,
+#button_delete_sweet.htmx-swapping {
+  opacity: 0;
+  font-size: 0;
+  transition: opacity 1s ease-out, font-size 1s ease-out;
+}
+
+/* Loading indicator and hidden elements */
+[data-loading] {
+  display: none;
+}
+
+.hidden {
+  display: none;
+}
+
+.my-indicator-custom {
+  display: none;
+  height: 21px;
+}
+
+.htmx-request .my-indicator-custom,
+.htmx-request.my-indicator-custom {
+  display: inline;
+  height: 21px;
+}
