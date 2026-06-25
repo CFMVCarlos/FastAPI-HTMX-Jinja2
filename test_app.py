@@ -157,6 +157,13 @@ def test_path_deps(client):
     assert b"<li>Path Deps</li>" in response.content  # Check if the content is rendered properly
 
 
+def test_post_path_deps(client):
+    """Test POST request to path dependencies endpoint."""
+    response = client.post("/extensions/path_deps")
+    assert response.status_code == 200  # Ensure status is 200
+    assert b'<button hx-post="/path_deps" hx-swap="none">Post more to the list</button>' in response.content
+
+
 # --------------------------------------------------------------------------------
 # Test Miscellaneous Functionality
 # --------------------------------------------------------------------------------
