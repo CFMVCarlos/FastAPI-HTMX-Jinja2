@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-import time
 from typing import List, NoReturn, Optional
 
 from fastapi import APIRouter, Request, Response, WebSocket, WebSocketDisconnect
@@ -104,7 +103,7 @@ async def post_loading_states(request: Request) -> Response:
     Simulates a loading state by introducing a delay.
     Typically used when performing a time-consuming task.
     """
-    time.sleep(5)  # Simulate a delay of 5 seconds
+    await asyncio.sleep(5)  # Simulate a delay of 5 seconds
     return Response(status_code=204)  # No content to return
 
 
