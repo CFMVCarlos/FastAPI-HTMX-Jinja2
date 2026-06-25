@@ -30,7 +30,7 @@ async def button_click(request: Request, color: Optional[str] = "red"):
     summary="Add a new element to the end of the body and swap a div using hx-swap-oob",
     response_class=HTMLResponse,
 )
-async def element(request: Request):
+async def element():
     """
     Endpoint to add a new element to the page and swap a div element
     using the hx-swap-oob feature.
