@@ -83,6 +83,15 @@ def test_vals_example(client):
     assert b"<div>Last Key pressed: A. Extra</div>" in response.content  # Ensure dynamic content is rendered correctly
 
 
+def test_vals_example_xss(client):
+    """Test query parameters to ensure XSS payload is escaped."""
+    response = client.get("/builtin/vals_example?lastKey=<script>alert('xss')</script>&extra_info=<img src=x onerror=alert('xss')>")
+    assert response.status_code == 200
+    assert b"&lt;script&gt;alert(&#x27;xss&#x27;)&lt;/script&gt;" in response.content
+    assert b"&lt;img src=x onerror=alert(&#x27;xss&#x27;)&gt;" in response.content
+    assert b"<script>" not in response.content
+
+
 # --------------------------------------------------------------------------------
 # Test Dynamic Content and SSE
 # --------------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 import asyncio
+import html
 import random
 from typing import Optional
 
@@ -109,8 +110,10 @@ async def vals_example(request: Request, lastKey: str, extra_info: str) -> HTMLR
     """
     forbidden_keys = forbidden_keys_list()
     if lastKey not in forbidden_keys:
+        safe_lastKey = html.escape(lastKey)
+        safe_extra_info = html.escape(extra_info)
         response = f"""
-            <div>Last Key pressed: {lastKey}. {extra_info}</div>
+            <div>Last Key pressed: {safe_lastKey}. {safe_extra_info}</div>
         """
         return HTMLResponse(content=response, status_code=200)
     return HTMLResponse(status_code=204)
