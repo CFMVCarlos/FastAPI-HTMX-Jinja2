@@ -1,4 +1,5 @@
 import asyncio
+import html
 import random
 from typing import Optional
 
@@ -90,9 +91,10 @@ async def include(request: Request) -> HTMLResponse:
     """
     body = await request.body()
     _, value = body.decode().split("=")
+    escaped_value = html.escape(value)
 
     response = f"""
-        Include information ({value})
+        Include information ({escaped_value})
     """
     return HTMLResponse(content=response, status_code=200)
 
