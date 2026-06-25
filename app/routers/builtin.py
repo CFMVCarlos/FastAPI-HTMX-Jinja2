@@ -100,6 +100,15 @@ async def include(request: Request) -> HTMLResponse:
     return HTMLResponse(content=response, status_code=200)
 
 
+FORBIDDEN_KEYS = frozenset([
+    "undefined", "Enter", "Shift", "CapsLock", "Control", "Alt", "Meta",
+    "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Backspace", "Delete",
+    "Insert", "Home", "End", "PageUp", "PageDown", "Tab", "Escape", "F1",
+    "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
+    "ScrollLock", "Pause", "ContextMenu", "PrintScreen", "NumLock", "Clear",
+])
+
+
 @router.get(
     "/vals_example",
     summary="Add information in the request",
@@ -125,14 +134,7 @@ def forbidden_keys_list():
     """
     Returns a list of forbidden keys that should not trigger the endpoint.
     """
-    forbidden_keys = [
-        "undefined", "Enter", "Shift", "CapsLock", "Control", "Alt", "Meta",
-        "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Backspace", "Delete",
-        "Insert", "Home", "End", "PageUp", "PageDown", "Tab", "Escape", "F1",
-        "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
-        "ScrollLock", "Pause", "ContextMenu", "PrintScreen", "NumLock", "Clear",
-    ]
-    return forbidden_keys
+    return FORBIDDEN_KEYS
 
 
 @router.get(
