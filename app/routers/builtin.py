@@ -1,4 +1,5 @@
 import asyncio
+import html
 import random
 from typing import Optional
 
@@ -19,8 +20,9 @@ async def button_click(request: Request, color: Optional[str] = "red"):
     Endpoint to change the color of a paragraph element when a button is clicked.
     The color is passed as a parameter (default is red).
     """
+    safe_color = html.escape(color)
     response = f"""
-        <p id="p1" class="smooth {color}">This is my HTML template.</p>
+        <p id="p1" class="smooth {safe_color}">This is my HTML template.</p>
     """
     return HTMLResponse(content=response, status_code=200)
 

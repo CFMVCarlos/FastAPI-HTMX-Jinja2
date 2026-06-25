@@ -37,6 +37,19 @@ def test_button_click(client):
     )  # Ensure the HTML content changes after the button click
 
 
+def test_button_click_xss_mitigation(client):
+    """Test button click to ensure XSS payload is properly escaped."""
+    import urllib.parse
+    payload = "\"><img src=x onerror=alert('XSS')>"
+    encoded_payload = urllib.parse.quote(payload, safe="")
+    response = client.post(f"/builtin/button_click/{encoded_payload}")
+    assert response.status_code == 200
+    assert (
+        b'<p id="p1" class="smooth &quot;&gt;&lt;img src=x onerror=alert(&#x27;XSS&#x27;)&gt;">This is my HTML template.</p>'
+        in response.content
+    )  # Ensure HTML payload is escaped
+
+
 def test_element(client):
     """Test if the new element is successfully added to the response."""
     response = client.get("/builtin/element")
