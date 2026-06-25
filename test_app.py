@@ -4,6 +4,11 @@ from fastapi.testclient import TestClient
 
 
 @pytest.fixture
+def anyio_backend():
+    return 'asyncio'
+
+
+@pytest.fixture
 def client():
     """Fixture to create a test client for FastAPI app."""
     with TestClient(app) as client:
@@ -104,6 +109,77 @@ def test_sse_event_triggered(client):
     assert response.status_code == 204
     assert "HX-Trigger" in response.headers  # Ensure HX-Trigger is present
     assert response.headers["HX-Trigger"] == "server_event_triggered"  # Verify the correct event name
+
+
+@pytest.mark.anyio
+async def test_message_stream():
+    """Test the SSE message stream endpoint generator directly."""
+    from app.routers.extensions import message_stream
+
+    class MockRequest:
+        def __init__(self):
+            self.disconnected = False
+        async def is_disconnected(self):
+            return self.disconnected
+
+    request = MockRequest()
+    response = await message_stream(request)
+    iterator = response.body_iterator
+
+    # Test first event
+    item1 = await anext(iterator)
+    assert item1['event'] == 'sse_event'
+    assert item1['data'] == '<div>SSE Content right here boys 1</div>'
+
+    # Test disconnecting stops generator
+    request.disconnected = True
+    try:
+        await anext(iterator)
+        assert False, "Should have raised StopAsyncIteration"
+    except StopAsyncIteration:
+        pass
+
+
+@pytest.mark.anyio
+async def test_message_stream_special_message():
+    """Test that the SSE message stream sends a special message every 10 counts."""
+    from app.routers.extensions import message_stream
+    from unittest.mock import patch
+
+    # Mock asyncio.sleep to run the test quickly without actually waiting 10 seconds
+    with patch("asyncio.sleep", return_value=None):
+        class MockRequest:
+            def __init__(self):
+                self.disconnected = False
+            async def is_disconnected(self):
+                return self.disconnected
+
+        request = MockRequest()
+        response = await message_stream(request)
+        iterator = response.body_iterator
+
+        # Fast forward through first 9 events
+        for i in range(1, 10):
+            item = await anext(iterator)
+            assert item['event'] == 'sse_event'
+            assert item['data'] == f'<div>SSE Content right here boys {i}</div>'
+
+        # The 10th count yields two events: one for % 1 == 0, one for % 10 == 0
+        item = await anext(iterator)
+        assert item['event'] == 'sse_event'
+        assert item['data'] == '<div>SSE Content right here boys 10</div>'
+
+        item = await anext(iterator)
+        assert item['event'] == 'sse_event_10'
+        assert item['data'] == '<div>SSE 10 Content right here boys 1</div>'
+
+        # Stop generator
+        request.disconnected = True
+        try:
+            await anext(iterator)
+            assert False, "Should have raised StopAsyncIteration"
+        except StopAsyncIteration:
+            pass
 
 
 # --------------------------------------------------------------------------------
