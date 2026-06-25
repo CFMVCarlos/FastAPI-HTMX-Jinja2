@@ -260,6 +260,13 @@ def test_loading_states(client):
     assert response.status_code == 204  # Check if the loading states are handled correctly
 
 
+def test_get_loading_states(client):
+    """Test if the GET loading states endpoint returns the correct HTML content."""
+    response = client.get("/extensions/loading_states")
+    assert response.status_code == 200
+    assert b"Click me for preload (Swapped)" in response.content
+
+
 def test_path_deps(client):
     """Test path dependencies."""
     response = client.get("/extensions/path_deps")
