@@ -15,7 +15,7 @@ router = APIRouter(prefix="/builtin", tags=["Builtin"])
     summary="Change the color of paragraph.",
     response_class=HTMLResponse,
 )
-async def button_click(request: Request, color: Optional[str] = "red"):
+async def button_click(color: Optional[str] = "red"):
     """
     Endpoint to change the color of a paragraph element when a button is clicked.
     The color is passed as a parameter (default is red).
@@ -49,7 +49,7 @@ async def element():
     summary="Select a particular element from the response",
     response_class=HTMLResponse,
 )
-async def select_element(request: Request):
+async def select_element():
     """
     Endpoint that returns multiple elements and allows the client
     to select specific elements.
@@ -67,7 +67,7 @@ async def select_element(request: Request):
     summary="Select a particular element from the response to change the button and other OOB elements",
     response_class=HTMLResponse,
 )
-async def select_element_oob(request: Request) -> HTMLResponse:
+async def select_element_oob() -> HTMLResponse:
     """
     Endpoint that selects elements from the response and modifies a button and other out-of-band (OOB) elements.
     """
@@ -104,7 +104,7 @@ async def include(request: Request) -> HTMLResponse:
     summary="Add information in the request",
     response_class=HTMLResponse,
 )
-async def vals_example(request: Request, lastKey: str, extra_info: str) -> HTMLResponse:
+async def vals_example(lastKey: str, extra_info: str) -> HTMLResponse:
     """
     Example endpoint that adds information in the request, checks for forbidden keys,
     and returns data based on the last key pressed.
@@ -137,7 +137,7 @@ def forbidden_keys_list():
 @router.get(
     "/beautiful_div", summary="Returns divs with content", response_class=HTMLResponse
 )
-async def beautiful_div(request: Request) -> HTMLResponse:
+async def beautiful_div() -> HTMLResponse:
     """
     Endpoint to return a beautiful div with content.
     """
@@ -155,7 +155,7 @@ ALLOW_RESPONSE_CHANGE: bool = False
     summary="Changes the state of the variable ALLOW_RESPONSE_CHANGE",
     response_class=Response,
 )
-async def response_allow(request: Request) -> Response:
+async def response_allow() -> Response:
     """
     Endpoint to toggle the ALLOW_RESPONSE_CHANGE variable to enable or disable response changes.
     """
@@ -169,7 +169,7 @@ async def response_allow(request: Request) -> Response:
     summary="Returns a text with random numbers when the state is True",
     response_class=Response,
 )
-async def response_change(request: Request) -> Response:
+async def response_change() -> Response:
     """
     Endpoint that returns a text with a random number if ALLOW_RESPONSE_CHANGE is True.
     If False, it returns a 204 status (no content).
@@ -185,7 +185,7 @@ async def response_change(request: Request) -> Response:
 @router.get(
     "/info", summary="Does not return anything but a OK status", response_class=Response
 )
-async def info(request: Request) -> Response:
+async def info() -> Response:
     """
     Endpoint that returns an OK status (204) without any content.
     """
@@ -212,7 +212,7 @@ async def htmx_headers(request: Request) -> HTMLResponse:
 
 
 @router.get("/file_download", summary="Download a file", response_class=Response)
-async def file_download(request: Request) -> Response:
+async def file_download() -> Response:
     """
     Endpoint to trigger the download of a file (e.g., an image).
     """
@@ -225,7 +225,7 @@ async def file_download(request: Request) -> Response:
     summary="Does not return anything but a OK status",
     response_class=HTMLResponse,
 )
-async def sync_first(request: Request) -> HTMLResponse:
+async def sync_first() -> HTMLResponse:
     """
     Simulate a slow operation and return a response indicating the first sync button was clicked.
     """
@@ -239,7 +239,7 @@ async def sync_first(request: Request) -> HTMLResponse:
     summary="Does not return anything but a OK status",
     response_class=HTMLResponse,
 )
-async def sync_second(request: Request) -> HTMLResponse:
+async def sync_second() -> HTMLResponse:
     """
     Simulate a slow operation and return a response indicating the second sync button was clicked.
     """
@@ -256,7 +256,7 @@ COUNT = 0
     summary="Trigger a server event",
     response_class=HTMLResponse,
 )
-def server_event_trigger(request: Request) -> HTMLResponse:
+def server_event_trigger() -> HTMLResponse:
     """
     Trigger a server event when the COUNT variable reaches 5.
     The event is sent to the client via HX-Trigger header.
