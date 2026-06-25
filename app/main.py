@@ -13,9 +13,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # These routers define the endpoints for different parts of the application
 from app.routers import builtin, extensions, root
 
-# Getting the directory of the current script
-script_dir = os.path.dirname(os.path.abspath(__file__))
-
 # Initializing the FastAPI application
 app = FastAPI()
 
