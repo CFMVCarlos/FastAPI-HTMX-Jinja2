@@ -172,3 +172,10 @@ def test_sweet_alert_confirmed(client):
     response = client.get("/extensions/sweet_alert_confirmed")
     assert response.status_code == 200  # Ensure status is 200
     assert b"Sweet Alert Confirmed" in response.content  # Ensure Sweet Alert confirmation message appears
+
+
+def test_sync_first(client):
+    """Test the sync_first endpoint."""
+    response = client.get("/builtin/sync_first")
+    assert response.status_code == 200
+    assert b"First sync button won" in response.content
