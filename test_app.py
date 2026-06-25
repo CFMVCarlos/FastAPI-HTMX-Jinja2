@@ -89,6 +89,19 @@ def test_beautiful_div(client):
     assert b"<div>Beautiful Div Here</div>" in response.content  # Check if the div content is rendered
 
 
+def test_sse_event_triggered_extension(client):
+    """Test if the SSE event triggered endpoint returns the correct content."""
+    # Test without dataFromSSE parameter
+    response = client.get("/extensions/sse_event_triggered")
+    assert response.status_code == 200
+    assert b"No data provided" in response.content
+
+    # Test with dataFromSSE parameter
+    response = client.get("/extensions/sse_event_triggered?dataFromSSE=Custom+data")
+    assert response.status_code == 200
+    assert b"Custom data" in response.content
+
+
 def test_sse_event_triggered(client):
     """Test that the server event is triggered after the COUNT reaches 5."""
     # Make 4 requests to increment COUNT up to 4 (since the event is triggered on the 5th request)
