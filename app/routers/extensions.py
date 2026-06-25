@@ -205,6 +205,7 @@ class ConnectionManager:
                 </div>
                 <input hx-swap-oob="outerHTML:#web_socket_input" id="web_socket_input" name="chat_message" placeholder="Web Socket Phrase"/>
             """
+        for connection in self.active_connections:
             await connection.send_text(content)
 
 # Initialize the connection manager instance
