@@ -1,6 +1,7 @@
 import pytest
 from app.main import app
 from fastapi.testclient import TestClient
+from app.routers.builtin import forbidden_keys_list
 
 
 @pytest.fixture
@@ -165,6 +166,17 @@ def test_info(client):
     """Test the /info endpoint."""
     response = client.get("/builtin/info")
     assert response.status_code == 204  # Ensure the status is 204
+
+
+def test_forbidden_keys_list():
+    """Test if forbidden_keys_list returns the expected list of keys."""
+    keys = forbidden_keys_list()
+    assert isinstance(keys, list)
+    assert len(keys) == 38
+    assert "undefined" in keys
+    assert "Enter" in keys
+    assert "Escape" in keys
+    assert "Clear" in keys
 
 
 def test_sweet_alert_confirmed(client):
