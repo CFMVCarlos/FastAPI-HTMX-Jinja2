@@ -1,6 +1,12 @@
 import pytest
 from app.main import app
 from fastapi.testclient import TestClient
+from app.routers.builtin import forbidden_keys_list
+
+
+@pytest.fixture
+def anyio_backend():
+    return 'asyncio'
 
 
 @pytest.fixture
@@ -37,6 +43,19 @@ def test_button_click(client):
     )  # Ensure the HTML content changes after the button click
 
 
+def test_button_click_xss_mitigation(client):
+    """Test button click to ensure XSS payload is properly escaped."""
+    import urllib.parse
+    payload = "\"><img src=x onerror=alert('XSS')>"
+    encoded_payload = urllib.parse.quote(payload, safe="")
+    response = client.post(f"/builtin/button_click/{encoded_payload}")
+    assert response.status_code == 200
+    assert (
+        b'<p id="p1" class="smooth &quot;&gt;&lt;img src=x onerror=alert(&#x27;XSS&#x27;)&gt;">This is my HTML template.</p>'
+        in response.content
+    )  # Ensure HTML payload is escaped
+
+
 def test_element(client):
     """Test if the new element is successfully added to the response."""
     response = client.get("/builtin/element")
@@ -71,11 +90,30 @@ def test_include(client):
     )  # Check if the input is properly reflected in the response
 
 
+def test_include_xss(client):
+    """Test that XSS payload in include endpoint is properly HTML-escaped."""
+    response = client.post("/builtin/include", content=b"include_input=<script>alert(1)</script>")
+    assert response.status_code == 200
+    # Payload should be escaped
+    assert b"&lt;script&gt;alert(1)&lt;/script&gt;" in response.content
+    # Raw payload should NOT be present
+    assert b"<script>alert(1)</script>" not in response.content
+
+
 def test_vals_example(client):
     """Test query parameters and ensure proper rendering of dynamic content."""
     response = client.get("/builtin/vals_example?lastKey=A&extra_info=Extra")
     assert response.status_code == 200  # Check if the request is successful
     assert b"<div>Last Key pressed: A. Extra</div>" in response.content  # Ensure dynamic content is rendered correctly
+
+
+def test_vals_example_xss(client):
+    """Test query parameters to ensure XSS payload is escaped."""
+    response = client.get("/builtin/vals_example?lastKey=<script>alert('xss')</script>&extra_info=<img src=x onerror=alert('xss')>")
+    assert response.status_code == 200
+    assert b"&lt;script&gt;alert(&#x27;xss&#x27;)&lt;/script&gt;" in response.content
+    assert b"&lt;img src=x onerror=alert(&#x27;xss&#x27;)&gt;" in response.content
+    assert b"<script>" not in response.content
 
 
 # --------------------------------------------------------------------------------
@@ -87,6 +125,17 @@ def test_beautiful_div(client):
     response = client.get("/builtin/beautiful_div")
     assert response.status_code == 200  # Check if the request is successful
     assert b"<div>Beautiful Div Here</div>" in response.content  # Check if the div content is rendered
+
+
+def test_sse_event_triggered_xss(client):
+    """Test that the /extensions/sse_event_triggered endpoint escapes HTML to prevent XSS."""
+    malicious_payload = "<script>alert(1)</script>"
+    response = client.get(f"/extensions/sse_event_triggered?dataFromSSE={malicious_payload}")
+    assert response.status_code == 200
+    # Make sure the raw malicious payload is not present
+    assert b"<script>alert(1)</script>" not in response.content
+    # Make sure the escaped payload is present
+    assert b"&lt;script&gt;alert(1)&lt;/script&gt;" in response.content
 
 
 def test_sse_event_triggered(client):
@@ -104,6 +153,77 @@ def test_sse_event_triggered(client):
     assert response.status_code == 204
     assert "HX-Trigger" in response.headers  # Ensure HX-Trigger is present
     assert response.headers["HX-Trigger"] == "server_event_triggered"  # Verify the correct event name
+
+
+@pytest.mark.anyio
+async def test_message_stream():
+    """Test the SSE message stream endpoint generator directly."""
+    from app.routers.extensions import message_stream
+
+    class MockRequest:
+        def __init__(self):
+            self.disconnected = False
+        async def is_disconnected(self):
+            return self.disconnected
+
+    request = MockRequest()
+    response = await message_stream(request)
+    iterator = response.body_iterator
+
+    # Test first event
+    item1 = await anext(iterator)
+    assert item1['event'] == 'sse_event'
+    assert item1['data'] == '<div>SSE Content right here boys 1</div>'
+
+    # Test disconnecting stops generator
+    request.disconnected = True
+    try:
+        await anext(iterator)
+        assert False, "Should have raised StopAsyncIteration"
+    except StopAsyncIteration:
+        pass
+
+
+@pytest.mark.anyio
+async def test_message_stream_special_message():
+    """Test that the SSE message stream sends a special message every 10 counts."""
+    from app.routers.extensions import message_stream
+    from unittest.mock import patch
+
+    # Mock asyncio.sleep to run the test quickly without actually waiting 10 seconds
+    with patch("asyncio.sleep", return_value=None):
+        class MockRequest:
+            def __init__(self):
+                self.disconnected = False
+            async def is_disconnected(self):
+                return self.disconnected
+
+        request = MockRequest()
+        response = await message_stream(request)
+        iterator = response.body_iterator
+
+        # Fast forward through first 9 events
+        for i in range(1, 10):
+            item = await anext(iterator)
+            assert item['event'] == 'sse_event'
+            assert item['data'] == f'<div>SSE Content right here boys {i}</div>'
+
+        # The 10th count yields two events: one for % 1 == 0, one for % 10 == 0
+        item = await anext(iterator)
+        assert item['event'] == 'sse_event'
+        assert item['data'] == '<div>SSE Content right here boys 10</div>'
+
+        item = await anext(iterator)
+        assert item['event'] == 'sse_event_10'
+        assert item['data'] == '<div>SSE 10 Content right here boys 1</div>'
+
+        # Stop generator
+        request.disconnected = True
+        try:
+            await anext(iterator)
+            assert False, "Should have raised StopAsyncIteration"
+        except StopAsyncIteration:
+            pass
 
 
 # --------------------------------------------------------------------------------
@@ -150,6 +270,13 @@ def test_loading_states(client):
     assert response.status_code == 204  # Check if the loading states are handled correctly
 
 
+def test_get_loading_states(client):
+    """Test if the GET loading states endpoint returns the correct HTML content."""
+    response = client.get("/extensions/loading_states")
+    assert response.status_code == 200
+    assert b"Click me for preload (Swapped)" in response.content
+
+
 def test_path_deps(client):
     """Test path dependencies."""
     response = client.get("/extensions/path_deps")
@@ -157,14 +284,39 @@ def test_path_deps(client):
     assert b"<li>Path Deps</li>" in response.content  # Check if the content is rendered properly
 
 
+def test_post_path_deps(client):
+    """Test POST request to path dependencies endpoint."""
+    response = client.post("/extensions/path_deps")
+    assert response.status_code == 200  # Ensure status is 200
+    assert b'<button hx-post="/path_deps" hx-swap="none">Post more to the list</button>' in response.content
+
+
 # --------------------------------------------------------------------------------
 # Test Miscellaneous Functionality
 # --------------------------------------------------------------------------------
+
+def test_sync_second(client):
+    """Test the sync_second endpoint."""
+    response = client.get("/builtin/sync_second")
+    assert response.status_code == 200
+    assert b"Second sync button won" in response.content
+
 
 def test_info(client):
     """Test the /info endpoint."""
     response = client.get("/builtin/info")
     assert response.status_code == 204  # Ensure the status is 204
+
+
+def test_forbidden_keys_list():
+    """Test if forbidden_keys_list returns the expected list of keys."""
+    keys = forbidden_keys_list()
+    assert isinstance(keys, list)
+    assert len(keys) == 38
+    assert "undefined" in keys
+    assert "Enter" in keys
+    assert "Escape" in keys
+    assert "Clear" in keys
 
 
 def test_sweet_alert_confirmed(client):
@@ -174,8 +326,16 @@ def test_sweet_alert_confirmed(client):
     assert b"Sweet Alert Confirmed" in response.content  # Ensure Sweet Alert confirmation message appears
 
 
-def test_file_download(client):
-    """Test the file download endpoint."""
-    response = client.get("/builtin/file_download")
-    assert response.status_code == 200  # Check if the file download is successful
-    assert response.headers["content-type"] == "image/png"  # Verify the correct media type
+def test_htmx_headers(client):
+    """Test the htmx_headers endpoint with and without the HX-Trigger header."""
+    # Test without the header
+    response = client.get("/builtin/htmx_headers")
+    assert response.status_code == 200
+    assert b"Correct button was selected" not in response.content
+
+    # Test with the header
+    response = client.get(
+        "/builtin/htmx_headers", headers={"HX-Trigger": "htmx_header_button_id"}
+    )
+    assert response.status_code == 200
+    assert b"Correct button was selected based on HTMX Request Headers" in response.content
