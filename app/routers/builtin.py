@@ -97,6 +97,15 @@ async def include(request: Request) -> HTMLResponse:
     return HTMLResponse(content=response, status_code=200)
 
 
+FORBIDDEN_KEYS = [
+    "undefined", "Enter", "Shift", "CapsLock", "Control", "Alt", "Meta",
+    "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Backspace", "Delete",
+    "Insert", "Home", "End", "PageUp", "PageDown", "Tab", "Escape", "F1",
+    "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
+    "ScrollLock", "Pause", "ContextMenu", "PrintScreen", "NumLock", "Clear",
+]
+
+
 @router.get(
     "/vals_example",
     summary="Add information in the request",
@@ -107,27 +116,12 @@ async def vals_example(request: Request, lastKey: str, extra_info: str) -> HTMLR
     Example endpoint that adds information in the request, checks for forbidden keys,
     and returns data based on the last key pressed.
     """
-    forbidden_keys = forbidden_keys_list()
-    if lastKey not in forbidden_keys:
+    if lastKey not in FORBIDDEN_KEYS:
         response = f"""
             <div>Last Key pressed: {lastKey}. {extra_info}</div>
         """
         return HTMLResponse(content=response, status_code=200)
     return HTMLResponse(status_code=204)
-
-
-def forbidden_keys_list():
-    """
-    Returns a list of forbidden keys that should not trigger the endpoint.
-    """
-    forbidden_keys = [
-        "undefined", "Enter", "Shift", "CapsLock", "Control", "Alt", "Meta",
-        "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Backspace", "Delete",
-        "Insert", "Home", "End", "PageUp", "PageDown", "Tab", "Escape", "F1",
-        "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
-        "ScrollLock", "Pause", "ContextMenu", "PrintScreen", "NumLock", "Clear",
-    ]
-    return forbidden_keys
 
 
 @router.get(
