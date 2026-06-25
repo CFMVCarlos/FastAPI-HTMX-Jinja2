@@ -90,6 +90,16 @@ def test_include(client):
     )  # Check if the input is properly reflected in the response
 
 
+def test_include_xss(client):
+    """Test that XSS payload in include endpoint is properly HTML-escaped."""
+    response = client.post("/builtin/include", content=b"include_input=<script>alert(1)</script>")
+    assert response.status_code == 200
+    # Payload should be escaped
+    assert b"&lt;script&gt;alert(1)&lt;/script&gt;" in response.content
+    # Raw payload should NOT be present
+    assert b"<script>alert(1)</script>" not in response.content
+
+
 def test_vals_example(client):
     """Test query parameters and ensure proper rendering of dynamic content."""
     response = client.get("/builtin/vals_example?lastKey=A&extra_info=Extra")
