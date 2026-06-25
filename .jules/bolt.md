@@ -1,0 +1,3 @@
+## 2024-06-25 - Avoid `asyncio.gather` for Mass Broadcasting
+**Learning:** In a FastAPI app with Starlette WebSockets (`ConnectionManager` pattern), using `asyncio.gather` to parallelize `await connection.send_text()` across 10,000 active connections is significantly slower (taking ~10.9s vs ~0.15s) compared to sequential `await`s. This is likely due to the enormous overhead of creating and scheduling 10,000 individual task wrappers.
+**Action:** When broadcasting messages to a large pool of WebSocket connections, keep the code simple with sequential `await`s in a loop, and ensure the message payload creation (formatting, HTML escaping, string interpolation) is strictly performed *once* outside of the broadcast loop.
