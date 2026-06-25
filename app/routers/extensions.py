@@ -23,7 +23,7 @@ logger.addHandler(handler)  # Add the handler to the logger
 # --------------------------------------------------------------------------------
 @router.get("/sse_event_triggered", response_class=HTMLResponse)
 async def sse_event_triggered(
-    request: Request, dataFromSSE: Optional[str] = None
+    dataFromSSE: Optional[str] = None
 ) -> HTMLResponse:
     """
     Endpoint to trigger SSE event. It returns the data sent from SSE, if provided.
@@ -99,7 +99,7 @@ async def websocket_endpoint(websocket: WebSocket) -> NoReturn:
 # Loading States Route (POST)
 # --------------------------------------------------------------------------------
 @router.post("/loading_states", response_class=Response)
-async def post_loading_states(request: Request) -> Response:
+async def post_loading_states() -> Response:
     """
     Simulates a loading state by introducing a delay.
     Typically used when performing a time-consuming task.
@@ -112,7 +112,7 @@ async def post_loading_states(request: Request) -> Response:
 # Loading States Route (GET)
 # --------------------------------------------------------------------------------
 @router.get("/loading_states", response_class=HTMLResponse)
-async def get_loading_states(request: Request) -> HTMLResponse:
+async def get_loading_states() -> HTMLResponse:
     """
     Returns a simple HTML button that simulates a loading state when clicked.
     """
@@ -126,7 +126,7 @@ async def get_loading_states(request: Request) -> HTMLResponse:
 # Path Dependencies Route (GET)
 # --------------------------------------------------------------------------------
 @router.get("/path_deps", response_class=HTMLResponse)
-async def get_path_deps(request: Request) -> HTMLResponse:
+async def get_path_deps() -> HTMLResponse:
     """
     Returns a simple HTML list item.
     This is an example of a path dependency in a route.
@@ -141,7 +141,7 @@ async def get_path_deps(request: Request) -> HTMLResponse:
 # Path Dependencies Route (POST)
 # --------------------------------------------------------------------------------
 @router.post("/path_deps", response_class=HTMLResponse)
-async def post_path_deps(request: Request) -> HTMLResponse:
+async def post_path_deps() -> HTMLResponse:
     """
     Returns an HTML button that can be used to post more data to the list.
     The button will not trigger a page reload and uses hx-swap for dynamic content update.
@@ -156,7 +156,7 @@ async def post_path_deps(request: Request) -> HTMLResponse:
 # Sweet Alert Confirmation Route (GET)
 # --------------------------------------------------------------------------------
 @router.get("/sweet_alert_confirmed", response_class=HTMLResponse)
-async def sweet_alert_confirmed(request: Request) -> HTMLResponse:
+async def sweet_alert_confirmed() -> HTMLResponse:
     """
     Returns a confirmation message when a sweet alert is confirmed.
     """
