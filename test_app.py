@@ -161,6 +161,13 @@ def test_path_deps(client):
 # Test Miscellaneous Functionality
 # --------------------------------------------------------------------------------
 
+def test_sync_second(client):
+    """Test the sync_second endpoint."""
+    response = client.get("/builtin/sync_second")
+    assert response.status_code == 200
+    assert b"Second sync button won" in response.content
+
+
 def test_info(client):
     """Test the /info endpoint."""
     response = client.get("/builtin/info")
