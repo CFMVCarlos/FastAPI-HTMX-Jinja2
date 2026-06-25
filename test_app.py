@@ -172,3 +172,18 @@ def test_sweet_alert_confirmed(client):
     response = client.get("/extensions/sweet_alert_confirmed")
     assert response.status_code == 200  # Ensure status is 200
     assert b"Sweet Alert Confirmed" in response.content  # Ensure Sweet Alert confirmation message appears
+
+
+def test_htmx_headers(client):
+    """Test the htmx_headers endpoint with and without the HX-Trigger header."""
+    # Test without the header
+    response = client.get("/builtin/htmx_headers")
+    assert response.status_code == 200
+    assert b"Correct button was selected" not in response.content
+
+    # Test with the header
+    response = client.get(
+        "/builtin/htmx_headers", headers={"HX-Trigger": "htmx_header_button_id"}
+    )
+    assert response.status_code == 200
+    assert b"Correct button was selected based on HTMX Request Headers" in response.content
