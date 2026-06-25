@@ -103,6 +103,17 @@ def test_beautiful_div(client):
     assert b"<div>Beautiful Div Here</div>" in response.content  # Check if the div content is rendered
 
 
+def test_sse_event_triggered_xss(client):
+    """Test that the /extensions/sse_event_triggered endpoint escapes HTML to prevent XSS."""
+    malicious_payload = "<script>alert(1)</script>"
+    response = client.get(f"/extensions/sse_event_triggered?dataFromSSE={malicious_payload}")
+    assert response.status_code == 200
+    # Make sure the raw malicious payload is not present
+    assert b"<script>alert(1)</script>" not in response.content
+    # Make sure the escaped payload is present
+    assert b"&lt;script&gt;alert(1)&lt;/script&gt;" in response.content
+
+
 def test_sse_event_triggered(client):
     """Test that the server event is triggered after the COUNT reaches 5."""
     # Make 4 requests to increment COUNT up to 4 (since the event is triggered on the 5th request)

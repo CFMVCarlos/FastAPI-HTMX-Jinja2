@@ -29,7 +29,8 @@ async def sse_event_triggered(
     """
     Endpoint to trigger SSE event. It returns the data sent from SSE, if provided.
     """
-    return HTMLResponse(content=dataFromSSE or "No data provided")
+    safe_content = html.escape(dataFromSSE) if dataFromSSE else "No data provided"
+    return HTMLResponse(content=safe_content)
 
 
 # --------------------------------------------------------------------------------
