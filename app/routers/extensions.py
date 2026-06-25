@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import html
 import time
 from typing import List, NoReturn, Optional
 
@@ -23,12 +24,13 @@ logger.addHandler(handler)  # Add the handler to the logger
 # --------------------------------------------------------------------------------
 @router.get("/sse_event_triggered", response_class=HTMLResponse)
 async def sse_event_triggered(
-    request: Request, dataFromSSE: Optional[str] = None
+    dataFromSSE: Optional[str] = None
 ) -> HTMLResponse:
     """
     Endpoint to trigger SSE event. It returns the data sent from SSE, if provided.
     """
-    return HTMLResponse(content=dataFromSSE or "No data provided")
+    safe_content = html.escape(dataFromSSE) if dataFromSSE else "No data provided"
+    return HTMLResponse(content=safe_content)
 
 
 # --------------------------------------------------------------------------------
@@ -99,12 +101,12 @@ async def websocket_endpoint(websocket: WebSocket) -> NoReturn:
 # Loading States Route (POST)
 # --------------------------------------------------------------------------------
 @router.post("/loading_states", response_class=Response)
-async def post_loading_states(request: Request) -> Response:
+async def post_loading_states() -> Response:
     """
     Simulates a loading state by introducing a delay.
     Typically used when performing a time-consuming task.
     """
-    time.sleep(5)  # Simulate a delay of 5 seconds
+    await asyncio.sleep(5)  # Simulate a delay of 5 seconds
     return Response(status_code=204)  # No content to return
 
 
@@ -112,7 +114,7 @@ async def post_loading_states(request: Request) -> Response:
 # Loading States Route (GET)
 # --------------------------------------------------------------------------------
 @router.get("/loading_states", response_class=HTMLResponse)
-async def get_loading_states(request: Request) -> HTMLResponse:
+async def get_loading_states() -> HTMLResponse:
     """
     Returns a simple HTML button that simulates a loading state when clicked.
     """
@@ -126,7 +128,7 @@ async def get_loading_states(request: Request) -> HTMLResponse:
 # Path Dependencies Route (GET)
 # --------------------------------------------------------------------------------
 @router.get("/path_deps", response_class=HTMLResponse)
-async def get_path_deps(request: Request) -> HTMLResponse:
+async def get_path_deps() -> HTMLResponse:
     """
     Returns a simple HTML list item.
     This is an example of a path dependency in a route.
@@ -141,7 +143,7 @@ async def get_path_deps(request: Request) -> HTMLResponse:
 # Path Dependencies Route (POST)
 # --------------------------------------------------------------------------------
 @router.post("/path_deps", response_class=HTMLResponse)
-async def post_path_deps(request: Request) -> HTMLResponse:
+async def post_path_deps() -> HTMLResponse:
     """
     Returns an HTML button that can be used to post more data to the list.
     The button will not trigger a page reload and uses hx-swap for dynamic content update.
@@ -156,7 +158,7 @@ async def post_path_deps(request: Request) -> HTMLResponse:
 # Sweet Alert Confirmation Route (GET)
 # --------------------------------------------------------------------------------
 @router.get("/sweet_alert_confirmed", response_class=HTMLResponse)
-async def sweet_alert_confirmed(request: Request) -> HTMLResponse:
+async def sweet_alert_confirmed() -> HTMLResponse:
     """
     Returns a confirmation message when a sweet alert is confirmed.
     """
@@ -193,11 +195,13 @@ class ConnectionManager:
         """
         Sends a message to all active WebSocket connections. Formats the message with a timestamp.
         """
-        # Format the current time
-        formatted_time: str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        content: str = f"""
+        for connection in self.active_connections:
+            # Format the current time
+            formatted_time: str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            escaped_message: str = html.escape(message)
+            content: str = f"""
                 <div hx-swap-oob="beforeend:#content">
-                <p>{formatted_time} || {message}</p>
+                <p>{formatted_time} || {escaped_message}</p>
                 </div>
                 <input hx-swap-oob="outerHTML:#web_socket_input" id="web_socket_input" name="chat_message" placeholder="Web Socket Phrase"/>
             """
