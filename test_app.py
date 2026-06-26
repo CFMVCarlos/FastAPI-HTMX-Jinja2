@@ -322,7 +322,7 @@ def test_info(client):
 def test_forbidden_keys_list():
     """Test if forbidden_keys_list returns the expected list of keys."""
     keys = forbidden_keys_list()
-    assert isinstance(keys, list)
+    assert isinstance(keys, frozenset)
     assert len(keys) == 38
     assert "undefined" in keys
     assert "Enter" in keys
