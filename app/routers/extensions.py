@@ -195,7 +195,6 @@ class ConnectionManager:
         """
         Sends a message to all active WebSocket connections. Formats the message with a timestamp.
         """
-        # ⚡ Bolt Optimization:
         # Compute the formatted time, HTML escaping, and HTML string just once
         # instead of inside a loop over all active connections. This turns an
         # O(N) string building problem into an O(1) problem per broadcast.
