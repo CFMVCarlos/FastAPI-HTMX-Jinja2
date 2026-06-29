@@ -322,10 +322,7 @@ def test_info(client):
 def test_forbidden_keys_list():
     """Test if forbidden_keys_list returns the expected list of keys."""
     keys = forbidden_keys_list()
-<<<<<<< HEAD
-=======
-    # Accept other iterables like frozenset since it returns FORBIDDEN_KEYS
->>>>>>> 7c14bef (⚡ Bolt: Optimize WebSocket broadcast loop to O(1) string creation)
+
     assert isinstance(keys, (list, set, frozenset, tuple))
     assert len(keys) == 38
     assert "undefined" in keys
