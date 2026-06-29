@@ -195,16 +195,15 @@ class ConnectionManager:
         """
         Sends a message to all active WebSocket connections. Formats the message with a timestamp.
         """
-        for connection in self.active_connections:
-            # Format the current time
-            formatted_time: str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            escaped_message: str = html.escape(message)
-            content: str = f"""
-                <div hx-swap-oob="beforeend:#content">
-                <p>{formatted_time} || {escaped_message}</p>
-                </div>
-                <input hx-swap-oob="outerHTML:#web_socket_input" id="web_socket_input" name="chat_message" placeholder="Web Socket Phrase"/>
-            """
+        formatted_time: str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        escaped_message: str = html.escape(message)
+        content: str = f"""
+            <div hx-swap-oob="beforeend:#content">
+            <p>{formatted_time} || {escaped_message}</p>
+            </div>
+            <input hx-swap-oob="outerHTML:#web_socket_input" id="web_socket_input" name="chat_message" placeholder="Web Socket Phrase"/>
+        """
+
         for connection in self.active_connections:
             await connection.send_text(content)
 
