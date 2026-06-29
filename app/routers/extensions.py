@@ -195,8 +195,10 @@ class ConnectionManager:
         """
         Sends a message to all active WebSocket connections. Formats the message with a timestamp.
         """
-        # ⚡ Bolt Optimization: Hoisted payload creation (time format, escape, f-string) outside loop to prevent O(N) recalculations
-        # Format the current time
+        if not self.active_connections:
+            return
+
+        # Format the current time once for all connections
         formatted_time: str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         escaped_message: str = html.escape(message)
         content: str = f"""
