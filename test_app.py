@@ -356,3 +356,11 @@ def test_htmx_headers(client):
     )
     assert response.status_code == 200
     assert b"Correct button was selected based on HTMX Request Headers" in response.content
+
+def test_security_headers(client):
+    """Test that security headers are applied to all responses."""
+    response = client.get("/builtin/info")
+    assert response.status_code == 204
+    assert response.headers.get("X-Content-Type-Options") == "nosniff"
+    assert response.headers.get("X-Frame-Options") == "DENY"
+    assert response.headers.get("Strict-Transport-Security") == "max-age=31536000; includeSubDomains"

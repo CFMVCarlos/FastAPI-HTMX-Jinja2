@@ -1,0 +1,7 @@
+## 🛡️ Sentinel: [security improvement] Add Security Headers Middleware
+
+**🚨 Severity:** MEDIUM
+**💡 Vulnerability:** Missing security headers (MIME sniffing and Clickjacking risks)
+**🎯 Impact:** Without these headers, the application is vulnerable to MIME type confusion attacks and Clickjacking, where an attacker could potentially embed the application in a malicious frame.
+**🔧 Fix:** Added a FastAPI middleware in `app/main.py` that appends `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, and `Strict-Transport-Security: max-age=31536000; includeSubDomains` to all HTTP responses.
+**✅ Verification:** A new test `test_security_headers` has been added to `test_app.py` to ensure these headers are correctly applied to the responses. The entire test suite was successfully executed using `python3 -m pytest`.
