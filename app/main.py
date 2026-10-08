@@ -2,7 +2,7 @@
 import os
 import sys
 import uvicorn  # Uvicorn ASGI server for FastAPI
-from fastapi import FastAPI  # FastAPI framework
+from fastapi import FastAPI, Request  # FastAPI framework
 from fastapi.staticfiles import StaticFiles  # To serve static files
 
 # Adding the parent directory of the current script to the system path
@@ -16,7 +16,21 @@ from app.routers import builtin, extensions, root
 # Initializing the FastAPI application
 app = FastAPI()
 
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    """
+    Middleware to append security headers to all responses.
+    This helps mitigate risks like MIME sniffing and Clickjacking.
+    """
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+
 # Including the routers for different parts of the application
+
 app.include_router(root.router)       # Root router, handles main endpoints
 app.include_router(extensions.router)  # Extensions router, handles additional features
 app.include_router(builtin.router)     # Builtin router, handles built-in features
