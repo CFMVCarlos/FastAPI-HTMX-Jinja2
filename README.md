@@ -33,11 +33,12 @@ To run the application locally, follow these steps:
 2. **Open your browser and visit:**
     [localhost](http://127.0.0.1:8000)
 
-To run the FastAPI tests, use the following command:
+To run the tests, use:
 
 ```bash
-python -m pytest test_app.py
+uv run pytest
 ```
+*(Or `pytest`)*
 
 ## Features
 
@@ -49,8 +50,8 @@ This project combines **HTMX** with **FastAPI** to deliver an interactive web in
    - Dynamically change text colors (`RED`, `BLUE`, `GREEN`) by sending `hx-post` requests.
    - Changes are reflected on the target element (`#p1`).
   
-- **Element Addition:**
-   - Add new elements dynamically to the bottom of the page using `hx-swap-oob="true"` and `hx-target="body"`.
+- **Element Addition & OOB Updates:**
+   - Add new elements dynamically to dedicated response containers and update remote elements simultaneously using `hx-swap-oob="true"`.
 
 - **Element Swapping:**
    - Swap an element's content with the response using `hx-select`.
