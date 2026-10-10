@@ -1,143 +1,150 @@
-# FastAPI Custom Made
+<div align="center">
 
-This project showcases a custom implementation using **FastAPI** for backend services and **HTMX** for dynamic web development. It integrates various HTMX features with FastAPI to create a smooth, interactive user experience, enabling server-driven updates without full-page reloads.
+# ⚡ FastAPI + HTMX + Jinja2 Showcase
 
-## Installation
+An interactive, high-performance reference application demonstrating server-driven UI, real-time hypermedia streams, and advanced frontend state patterns without heavy client-side JavaScript frameworks.
 
-Follow these steps to set up the project on your local machine:
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![HTMX](https://img.shields.io/badge/HTMX-1.9%2B-3366CC?style=flat-square&logo=htmx&logoColor=white)](https://htmx.org/)
+[![Jinja2](https://img.shields.io/badge/Jinja2-3.1-B41717?style=flat-square&logo=jinja&logoColor=white)](https://jinja.palletsprojects.com/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind-3.0%2B-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Tests](https://img.shields.io/badge/Tests-31%20Passed-brightgreen?style=flat-square&logo=pytest&logoColor=white)](https://pytest.org/)
 
-1. **Clone the repository:**
-    ```bash
-    git clone https://github.com/CFMVCarlos/FastAPI-HTMX-Jinja2
-    ```
+[Features](#-key-features) • [Quick Start](#-quick-start) • [Architecture](#-architecture) • [Testing & Benchmarking](#-testing--benchmarks) • [Author](#-author)
 
-2. **Navigate to the project directory:**
-    ```bash
-    cd FastAPI-HTMX-Jinja2
-    ```
+</div>
 
-3. **Install the necessary dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
+---
 
-## Usage
+## 📖 Overview
 
-To run the application locally, follow these steps:
+Modern web architectures often default to complex Single Page Application (SPA) setups when server-driven hypermedia could deliver a cleaner, faster, and more maintainable user experience. 
 
-1. **Start the FastAPI server:**
-    ```bash
-    uvicorn app.main:app --reload
-    ```
+This repository serves as a practical, comprehensive blueprint for pairing **FastAPI** with **HTMX** and **Jinja2**:
+- **Zero Heavy Frontend Build Step:** Pure HTML fragments dynamically swapped into place.
+- **Bi-directional Real-Time Capabilities:** Full-duplex WebSockets and live Server-Sent Events (SSE).
+- **Graceful Lifecycle & State Management:** Request queuing, header inspection, loading indicators, and out-of-band DOM mutations.
 
-2. **Open your browser and visit:**
-    [localhost](http://127.0.0.1:8000)
+---
 
-To run the tests, use:
+## ✨ Key Features
+
+### 1. 🔄 Server-Driven Content Swaps & Mutations
+- **Color Class Toggling:** Targeted element swap (`hx-target="#p1"` & `hx-swap="outerHTML"`) with instant server-rendered styling.
+- **Isolated Fragment Appending:** Appends newly rendered HTML fragments directly inside parent containers (`beforeend`).
+- **Out-of-Band Swaps (`hx-swap-oob`):** Modifies multiple disparate DOM nodes in a single HTTP response (e.g., updating a header notification banner while returning inline content).
+- **Selective DOM Querying (`hx-select`):** Extracts targeted elements from broader server responses.
+
+### 2. ⚡ Real-Time Streaming & Full-Duplex Channels
+- **Server-Sent Events (SSE):** Push continuous unidirectional updates (`/extensions/stream`) using `EventSourceResponse` without client polling.
+- **High-Performance WebSockets:** Real-time multi-client broadcast messaging manager with O(1) string interpolation and sub-millisecond dispatch times.
+
+### 3. 🎯 Advanced HTMX Controls & Synchronization
+- **Request Queue Synchronization (`hx-sync`):** Eliminates race conditions across slow asynchronous endpoints by enforcing orderly queue processing (`this:queue last`).
+- **Header-Based Triggers (`HX-Trigger`):** Server inspects caller headers (`request.headers.get("HX-Trigger")`) to dispatch targeted conditional responses.
+- **Server Event Emitters:** Server sends custom trigger events back to client listeners upon hitting internal counter thresholds.
+- **Permission-Gated Mutations:** Demonstrates server-level authorization gates returning `204 No Content` until explicit state flips.
+
+### 4. 🎨 UI Feedback & Jinja2 Templating
+- **Loading Indicators & Async Delays:** Declarative state spinners (`data-loading-states`) that auto-disable buttons while requests are in flight.
+- **SweetAlert2 & Native Modals:** Integrates native browser confirmations and promise-based modal dialogs prior to dispatching HTTP calls.
+- **Jinja2 Logic:** Server-side conditional branches, loop evaluation, and component inclusion (`{% include "extra_html.html" %}`).
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python `3.10+`
+- [`uv`](https://github.com/astral-sh/uv) (recommended) or `pip`
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/CFMVCarlos/FastAPI-HTMX-Jinja2.git
+cd FastAPI-HTMX-Jinja2
+```
+
+### 2. Install dependencies
+```bash
+uv pip install -r requirements.txt
+# Or with standard pip:
+# pip install -r requirements.txt
+```
+
+### 3. Run the development server
+```bash
+uv run uvicorn app.main:app --reload
+```
+
+Open your browser and navigate to:
+- **Interactive UI:** [http://localhost:8000](http://localhost:8000)
+- **Interactive Swagger Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc Documentation:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
+
+---
+
+## 🏛️ Architecture
+
+```
+FastAPI-HTMX-Jinja2/
+├── app/
+│   ├── main.py                     # Application entry point, middleware, exception handlers
+│   ├── api/
+│   │   └── services/
+│   │       └── builtin_service.py  # Decoupled HTML fragment generators & business logic
+│   └── routers/
+│       ├── root.py                 # Index page route & template context rendering
+│       ├── builtin.py              # Core HTMX endpoints (DOM swaps, headers, sync)
+│       └── extensions.py           # Real-time channels (WebSockets, SSE, loading states)
+├── static/
+│   ├── css/                        # Custom animations, transitions, and indicators
+│   ├── js/                         # Vendor JavaScript libraries (HTMX core)
+│   └── img/                        # Assets & indicators
+├── templates/
+│   ├── index.html                  # Main showcase dashboard styled with Tailwind CSS
+│   └── extra_html.html             # Jinja2 component include demo
+└── tests/
+    ├── __init__.py
+    ├── test_app.py                 # Full pytest suite (31 tests covering all endpoints)
+    └── benchmark.py                # High-concurrency WebSocket broadcast stress benchmark
+```
+
+---
+
+## 🧪 Testing & Benchmarks
+
+### Running the Test Suite
+The project includes automated tests verifying endpoint status codes, XSS escaping, SSE generators, WebSocket dispatches, and Jinja2 template rendering.
 
 ```bash
 uv run pytest
 ```
-*(Or `pytest`)*
 
-## Features
+```
+====================== 31 passed in 0.85s =======================
+```
 
-This project combines **HTMX** with **FastAPI** to deliver an interactive web interface with the following features:
+### High-Concurrency WebSocket Benchmark
+The repository includes a dedicated benchmark in [`tests/benchmark.py`](tests/benchmark.py) to measure broadcast latency across 10,000 concurrent WebSocket connections:
 
-### 1. Built-in HTMX Features
+```bash
+uv run python tests/benchmark.py
+```
+```
+Time taken for 100 broadcasts to 10,000 connections: ~0.12 seconds
+```
 
-- **Button Click Actions:**
-   - Dynamically change text colors (`RED`, `BLUE`, `GREEN`) by sending `hx-post` requests.
-   - Changes are reflected on the target element (`#p1`).
-  
-- **Element Addition & OOB Updates:**
-   - Add new elements dynamically to dedicated response containers and update remote elements simultaneously using `hx-swap-oob="true"`.
+---
 
-- **Element Swapping:**
-   - Swap an element's content with the response using `hx-select`.
+## 👤 Author
 
-- **Input Value Inclusion:**
-   - Include input field values in requests with `hx-include`.
+**Carlos Valente**
+- GitHub: [@CFMVCarlos](https://github.com/CFMVCarlos)
+- Profile: [Carlos Valente](https://www.boot.dev/u/carlosfmv)
 
-- **Confirmation Before Action:**
-   - Display a confirmation prompt before executing actions like deletions using `hx-confirm`.
+---
 
-- **Boosted Content:**
-   - Enhance links and targets for content swapping using `hx-boost="true"`.
+## 📄 License
 
-- **Loading States:**
-   - Implement loading states with custom classes for target elements (`data-loading-states`).
-
-- **Path Dependencies:**
-   - Trigger updates based on specific path dependencies using `hx-ext="path-deps"`.
-
-- **Request Synchronization:**
-   - Ensure requests run sequentially using `hx-sync`.
-
-- **File Download:**
-   - Provide downloadable files through anchor links with `download="surprise_party.png"`.
-
-### 2. HTMX Extensions Features
-
-- **Class Tools Extension:**
-   - Toggle classes on elements dynamically (`classes="toggle faded:1s & toggle red:1s"`).
-
-- **Server-Sent Events (SSE):**
-   - Implement real-time updates with server streams using `hx-ext="sse"`.
-
-- **WebSockets Extension:**
-   - Enable WebSocket connections for live data updates using `hx-ext="ws"`.
-
-- **Advanced Loading States:**
-   - Add advanced loading states with delays and class changes during content refreshes.
-
-- **Preload Extension:**
-   - Preload content when interacting with specific elements (`preload="mousedown"`).
-
-- **Remove-Me Extension:**
-   - Automatically remove elements after a set duration (`remove-me="10s"`).
-
-- **SweetAlert2 Integration:**
-   - Use **SweetAlert2** for enhanced confirmation dialogs (`onClick="Swal.fire({...})"`).
-
-- **HTMX Event Handling (`hx-on:*`):**
-   - Trigger JavaScript code before and after HTMX requests (`hx-on::before-request`, `hx-on::after-request`).
-
-### 3. Jinja2 Templates
-
-The project utilizes **Jinja2** for dynamic HTML generation. It allows the creation of custom content by rendering variables, loops, and conditionals on the server side, then sending this content to the client.
-
-### 4. FastAPI Pytest Tests
-
-The project includes a comprehensive suite of **FastAPI pytest tests** to verify application functionality. Key tests include:
-
-- **Root and Delete Endpoints:**
-   - Test for proper rendering of the root template and handling of DELETE requests.
-
-- **Button Click Behavior:**
-   - Ensure that button clicks trigger the expected content changes (e.g., color updates).
-
-- **Element Addition and Swapping:**
-   - Validate the addition of new elements and the swapping of content dynamically.
-
-- **Dynamic Content Rendering:**
-   - Verify that form inputs and query parameters are properly rendered in response to user interactions.
-
-- **Server-Sent Events (SSE):**
-   - Ensure that server events are triggered when a predefined condition is met (e.g., after a certain number of requests).
-
-- **WebSocket Communication:**
-   - Confirm WebSocket connections and message exchanges for real-time updates.
-
-- **Response and State Changes:**
-   - Ensure that changes to application state (e.g., text updates, status changes) are reflected in real-time.
-
-- **Loading States and Path Dependencies:**
-   - Validate loading states and path dependencies to ensure proper content changes are triggered.
-
-- **SweetAlert2 Integration:**
-   - Test the integration of SweetAlert2 for confirmation dialogs during interactions.
-
-## Author
-
-- [Carlos Valente](https://github.com/CFMVCarlos)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
