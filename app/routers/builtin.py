@@ -5,9 +5,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import FileResponse, HTMLResponse
+from app.api.services.builtin_service import BuiltinService
 
 # Create an APIRouter instance for the built-in routes
 router = APIRouter(prefix="/builtin", tags=["Builtin"])
+builtin_service = BuiltinService()
 
 
 @router.post(
@@ -20,10 +22,17 @@ async def button_click(color: Optional[str] = "red"):
     Endpoint to change the color of a paragraph element when a button is clicked.
     The color is passed as a parameter (default is red).
     """
-    safe_color = html.escape(color)
-    response = f"""
-        <p id="p1" class="smooth {safe_color}">This is my HTML template.</p>
-    """
+    # Map colors to tailwind classes if needed, or rely on frontend styles
+    if color == "red":
+        tw_color = "text-red-600"
+    elif color == "blue":
+        tw_color = "text-blue-600"
+    elif color == "green":
+        tw_color = "text-green-600"
+    else:
+        tw_color = f"text-{html.escape(color)}-600"
+        
+    response = builtin_service.get_colored_paragraph(tw_color)
     return HTMLResponse(content=response, status_code=200)
 
 
@@ -37,10 +46,7 @@ async def element():
     Endpoint to add a new element to the page and swap a div element
     using the hx-swap-oob feature.
     """
-    response = """
-        <p class="fade-me-in">This is a new element.</p>
-        <div id="message" hx-swap-oob="true">Swap me directly using hx-swap-oob in the response!</div>
-    """
+    response = builtin_service.get_new_element()
     return HTMLResponse(content=response, status_code=200)
 
 
@@ -54,11 +60,7 @@ async def select_element():
     Endpoint that returns multiple elements and allows the client
     to select specific elements.
     """
-    response = """
-        <p id="select_p">Paragraph</p>
-        <div id="select_div">Div</div>
-        <h id="select_h">Header</h>
-    """
+    response = builtin_service.get_select_elements()
     return HTMLResponse(content=response, status_code=200)
 
 
@@ -71,13 +73,7 @@ async def select_element_oob() -> HTMLResponse:
     """
     Endpoint that selects elements from the response and modifies a button and other out-of-band (OOB) elements.
     """
-    response = """
-        <p id="select_p">Paragraph</p>
-        <p id="p1">This paragraph was changed using hx-select-oob in the request</p>
-        <div id="select_div">Div</div>
-        <h1 id="select_h1" classes="add red:2s">Header was changed</h1>
-        <span id="select_button_oob">Button Swapped</span>
-    """
+    response = builtin_service.get_select_elements_oob()
     return HTMLResponse(content=response, status_code=200)
 
 
@@ -91,12 +87,12 @@ async def include(request: Request) -> HTMLResponse:
     Endpoint to include extra information in the request body.
     """
     body = await request.body()
-    _, value = body.decode().split("=")
-    escaped_value = html.escape(value)
-
-    response = f"""
-        Include information ({escaped_value})
-    """
+    try:
+        _, value = body.decode().split("=")
+    except ValueError:
+        value = "Unknown"
+        
+    response = builtin_service.process_include(value)
     return HTMLResponse(content=response, status_code=200)
 
 

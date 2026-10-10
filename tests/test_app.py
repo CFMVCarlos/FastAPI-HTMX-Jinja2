@@ -38,7 +38,7 @@ def test_button_click(client):
     response = client.post("/builtin/button_click/red")
     assert response.status_code == 200  # Check if the button click returns status 200
     assert (
-        b'<p id="p1" class="smooth red">This is my HTML template.</p>'
+        b'<p id="p1" class="mb-4 text-lg font-semibold transition-colors duration-300 text-red-600">This is my HTML template.</p>'
         in response.content
     )  # Ensure the HTML content changes after the button click
 
@@ -51,7 +51,7 @@ def test_button_click_xss_mitigation(client):
     response = client.post(f"/builtin/button_click/{encoded_payload}")
     assert response.status_code == 200
     assert (
-        b'<p id="p1" class="smooth &quot;&gt;&lt;img src=x onerror=alert(&#x27;XSS&#x27;)&gt;">This is my HTML template.</p>'
+        b'text-&amp;quot;&amp;gt;&amp;lt;img src=x onerror=alert(&amp;#x27;XSS&amp;#x27;)&amp;gt;-600'
         in response.content
     )  # Ensure HTML payload is escaped
 
@@ -60,21 +60,21 @@ def test_element(client):
     """Test if the new element is successfully added to the response."""
     response = client.get("/builtin/element")
     assert response.status_code == 200  # Check the response status
-    assert b'<p class="fade-me-in">This is a new element.</p>' in response.content  # Ensure the new element is added
+    assert b'<p class="fade-me-in text-zinc-700 bg-zinc-100 p-4 rounded-lg my-2">This is a new element.</p>' in response.content  # Ensure the new element is added
 
 
 def test_select_element(client):
     """Test if the select element endpoint renders correctly."""
     response = client.get("/builtin/select_element")
     assert response.status_code == 200  # Check if the request is successful
-    assert b'<p id="select_p">Paragraph</p>' in response.content  # Check if the correct content is rendered
+    assert b'<p id="select_p" class="text-zinc-600">Paragraph</p>' in response.content  # Check if the correct content is rendered
 
 
 def test_select_element_oob(client):
     """Test out-of-band update for the select element."""
     response = client.get("/builtin/select_element_oob")
     assert response.status_code == 200  # Check if the request is successful
-    assert b'<p id="select_p">Paragraph</p>' in response.content  # Check if the content is updated correctly
+    assert b'<p id="select_p" class="text-zinc-600">Paragraph</p>' in response.content  # Check if the content is updated correctly
 
 
 # --------------------------------------------------------------------------------
@@ -86,7 +86,7 @@ def test_include(client):
     response = client.post("/builtin/include", data={"include_input": "test"})
     assert response.status_code == 200  # Ensure the response is successful
     assert (
-        b'Include information (test)' in response.content
+        b'<div class="bg-blue-50 text-blue-700 p-4 rounded-lg my-2">Include information (test)</div>' in response.content
     )  # Check if the input is properly reflected in the response
 
 
@@ -184,7 +184,7 @@ async def test_message_stream():
     # Test first event
     item1 = await anext(iterator)
     assert item1['event'] == 'sse_event'
-    assert item1['data'] == '<div>SSE Content right here boys 1</div>'
+    assert item1['data'] == '<div>Live Stream Update #1</div>'
 
     # Test disconnecting stops generator
     request.disconnected = True
@@ -217,16 +217,16 @@ async def test_message_stream_special_message():
         for i in range(1, 10):
             item = await anext(iterator)
             assert item['event'] == 'sse_event'
-            assert item['data'] == f'<div>SSE Content right here boys {i}</div>'
+            assert item['data'] == f'<div>Live Stream Update #{i}</div>'
 
         # The 10th count yields two events: one for % 1 == 0, one for % 10 == 0
         item = await anext(iterator)
         assert item['event'] == 'sse_event'
-        assert item['data'] == '<div>SSE Content right here boys 10</div>'
+        assert item['data'] == '<div>Live Stream Update #10</div>'
 
         item = await anext(iterator)
         assert item['event'] == 'sse_event_10'
-        assert item['data'] == '<div>SSE 10 Content right here boys 1</div>'
+        assert item['data'] == '<div>Milestone Event: Batch #1 reached</div>'
 
         # Stop generator
         request.disconnected = True

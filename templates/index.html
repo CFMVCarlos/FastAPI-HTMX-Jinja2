@@ -1,345 +1,543 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <title>Interactive HTMX-Jinja2-FastAPI Example Template</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FastAPI + HTMX + Jinja2 Showcase</title>
 
-    <!-- Include the HTMX library -->
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: '#f0f9ff',
+                100: '#e0f2fe',
+                500: '#0ea5e9',
+                600: '#0284c7',
+                700: '#0369a1',
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- HTMX Core -->
     <script src="/static/js/htmx.min.js"></script>
 
-    <!-- Include the HTMX custom CSS -->
+    <!-- HTMX Custom Styles -->
     <link rel="stylesheet" href="/static/css/styles.css" />
 
-    <!-- Include HTMX extensions -->
-    <!-- Class Tools extension for HTMX -->
+    <!-- HTMX Extensions -->
     <script src="https://unpkg.com/htmx.org/dist/ext/class-tools.js"></script>
-    <!-- Server Sent Events extension for HTMX -->
     <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
-    <!-- WebSockets extension for HTMX -->
     <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
-    <!-- Loading States extension for HTMX -->
     <script src="https://unpkg.com/htmx.org/dist/ext/loading-states.js"></script>
-    <!-- Path Dependencies extension for HTMX -->
     <script src="https://unpkg.com/htmx.org/dist/ext/path-deps.js"></script>
-    <!-- Include the preload extension for HTMX -->
     <script src="https://unpkg.com/htmx.org/dist/ext/preload.js"></script>
-    <!-- Include the remove-me extension for HTMX -->
     <script src="https://unpkg.com/htmx.org/dist/ext/remove-me.js"></script>
-    <!-- Include the SweetAlert2 library -->
+
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script>
-      // Enable logging for all HTMX requests
-      // htmx.logAll();
-
-      // Monitor events on the Element (use in the console)
-      // monitorEvents(htmx.find("#response_span_text_to_edit"));
-    </script>
   </head>
 
-  <body hx-ext="class-tools, loading-states, preload, remove-me">
-    <!-- Hidden message to be displayed by hx-swap-oob="true" -->
-    <div id="message"></div>
-    <!-- Title of the page -->
-    <h1 id="select_h1">Hello, world!</h1>
-    <!-- Buttons to change the color of the text -->
-    <p id="p1">This is my HTML template.</p>
-    <button
-      hx-post="/builtin/button_click/red"
-      hx-target="#p1"
-      hx-swap="outerHTML"
-    >
-      RED
-    </button>
-    <button
-      hx-post="/builtin/button_click/blue"
-      hx-target="#p1"
-      hx-swap="outerHTML"
-    >
-      BLUE
-    </button>
-    <button
-      hx-post="/builtin/button_click/green"
-      hx-target="#p1"
-      hx-swap="outerHTML"
-    >
-      GREEN
-    </button>
-    <p></p>
-    <!-- Button to toggle the class of the div using the class-tools extension -->
-    <div class="demo" classes="toggle faded:1s & toggle red:1s">
-      Toggle Demo
-    </div>
-    <p></p>
-    <!-- Button to add a new element to the the bottom of the body and using hx-swap-oob="true" -->
-    <button hx-get="/builtin/element" hx-target="body" hx-swap="beforeend">
-      NEW ELEMENT
-    </button>
-    <p></p>
-    <!-- Button to select an element and swap it with the specified content of the response -->
-    <button
-      hx-get="/builtin/select_element"
-      hx-select="#select_div"
-      hx-target="body"
-      hx-swap="beforeend"
-    >
-      SELECT ELEMENT
-    </button>
-    <p></p>
-    <!-- Button to select an element and swap it with the specified content of the response and select other elements to swap in using hx-select-oob -->
-    <button
-      id="select_button_oob"
-      hx-get="/builtin/select_element_oob"
-      hx-select="#select_button_oob"
-      hx-select-oob="#select_h1,#p1:innerHTML"
-    >
-      Swap this button
-    </button>
-    <p></p>
-    <!-- Button to include the value of the input in the request -->
-    <input
-      name="include_input"
-      type="number"
-      value="10"
-      placeholder="insert number"
-      style="width: 3em"
-    />
-    <button hx-post="/builtin/include" hx-include="[name='include_input']">
-      Include information
-    </button>
-    <p></p>
-    <!-- Button to include the values in the request-->
-    <div
-      hx-get="/builtin/vals_example"
-      hx-trigger="keyup"
-      hx-swap="beforeend"
-      hx-vals='js:{lastKey: event.key, extra_info: "all good"}'
-    >
-      <input type="text" placeholder="Type anything " />
-    </div>
-    <p></p>
-    <!-- Button to confirm delete action -->
-    <button
-      id="button_delete"
-      hx-delete="/"
-      hx-swap="outerHTML swap:1s"
-      hx-confirm="Are you sure you wish to delete your account?"
-    >
-      Delete My Account
-    </button>
-    <p></p>
-    <!-- Use pf hx-boost to add a new div to the body -->
-    <div
-      hx-boost="true"
-      hx-swap="beforeend show:this"
-      hx-target="this"
-      hx-push-url="false"
-    >
-      <a href="/builtin/beautiful_div">Generate Beautiful Divs</a>
-    </div>
-    <p></p>
-    <!-- Use of hx-sse to connect to a server-sent event -->
-    <div hx-ext="sse" sse-connect="/extensions/stream" sse-swap="sse_event">
-      Contents of this box will be updated in real time with every SSE message
-      received from the chatroom.
-    </div>
-    <div hx-ext="sse" sse-connect="/extensions/stream">
-      <div
-        hx-get="/extensions/sse_event_triggered"
-        hx-trigger="sse:sse_event_10"
-        hx-vals="js:{dataFromSSE: event.data}"
-      >
-        This content will be updated every 10th message
+  <body hx-ext="class-tools, loading-states, preload, remove-me" class="bg-zinc-50 text-zinc-800 font-sans antialiased min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-5xl mx-auto space-y-10">
+      
+      <!-- Top Header -->
+      <header class="border-b border-zinc-200 pb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200 mb-2">
+            Interactive Showcase
+          </span>
+          <h1 id="select_h1" class="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 transition-colors duration-500">
+            FastAPI + HTMX + Jinja2
+          </h1>
+          <p class="mt-1.5 text-sm sm:text-base text-zinc-500">
+            A clean, isolated reference for modern hypermedia patterns: server-driven UI, live streaming, out-of-band updates, and request synchronization.
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <a hx-boost="false" href="/builtin/file_download" download="sample_resource.png" class="h-9 inline-flex items-center gap-2 px-4 text-xs font-medium text-zinc-700 bg-white border border-zinc-300 rounded-lg shadow-sm hover:bg-zinc-50 transition">
+            <svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Download Resource
+          </a>
+          <a href="/docs" target="_blank" class="h-9 inline-flex items-center gap-1.5 px-4 text-xs font-semibold text-white bg-zinc-900 rounded-lg shadow-sm hover:bg-zinc-800 transition">
+            API Docs
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </a>
+        </div>
+      </header>
+
+      <!-- Main Sections Container -->
+      <div class="space-y-10">
+
+        <!-- ============================================================== -->
+        <!-- SECTION 1: SERVER-DRIVEN CONTENT SWAPS -->
+        <!-- ============================================================== -->
+        <section class="bg-white rounded-xl border border-zinc-200/80 shadow-sm p-6 sm:p-7">
+          <div class="border-b border-zinc-100 pb-4 mb-5">
+            <div class="flex items-center justify-between">
+              <h2 class="text-lg font-bold text-zinc-900">1. Server-Driven Content Swaps</h2>
+              <span class="text-xs font-mono bg-zinc-100 text-zinc-600 px-2.5 py-1 rounded">hx-target="#p1"</span>
+            </div>
+            <p class="text-xs sm:text-sm text-zinc-500 mt-1">
+              Clicking any color button requests a server-rendered replacement HTML fragment with updated classes and replaces the element below.
+            </p>
+          </div>
+
+          <!-- Isolated Container -->
+          <div class="bg-zinc-50 border border-zinc-100 rounded-lg p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="min-w-0">
+              <p class="text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-1">Target Element (<code class="font-mono">#p1</code>)</p>
+              <p id="p1" class="text-base font-semibold text-zinc-800 transition-colors duration-300">This is my HTML template.</p>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <button
+                hx-post="/builtin/button_click/red"
+                hx-target="#p1"
+                hx-swap="outerHTML"
+                class="h-9 px-4 bg-red-600 text-white text-xs font-medium rounded-lg shadow-sm hover:bg-red-700 transition"
+              >
+                Set Red
+              </button>
+              <button
+                hx-post="/builtin/button_click/blue"
+                hx-target="#p1"
+                hx-swap="outerHTML"
+                class="h-9 px-4 bg-sky-600 text-white text-xs font-medium rounded-lg shadow-sm hover:bg-sky-700 transition"
+              >
+                Set Blue
+              </button>
+              <button
+                hx-post="/builtin/button_click/green"
+                hx-target="#p1"
+                hx-swap="outerHTML"
+                class="h-9 px-4 bg-emerald-600 text-white text-xs font-medium rounded-lg shadow-sm hover:bg-emerald-700 transition"
+              >
+                Set Green
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- SECTION 2: DOM MANIPULATION & OUT-OF-BAND SWAPS -->
+        <!-- ============================================================== -->
+        <section class="bg-white rounded-xl border border-zinc-200/80 shadow-sm p-6 sm:p-7">
+          <div class="border-b border-zinc-100 pb-4 mb-5">
+            <h2 class="text-lg font-bold text-zinc-900">2. DOM Manipulation & Out-of-Band Swaps</h2>
+            <p class="text-xs sm:text-sm text-zinc-500 mt-1">
+              Targeted fragment rendering, out-of-band updates (<code class="font-mono text-xs">hx-swap-oob</code>), input inclusions, and reactive keyboard triggers.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            
+            <!-- Card 2A: Append Dynamic Element -->
+            <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-semibold text-zinc-900">Append Dynamic Element</h3>
+                  <span class="text-[11px] font-mono bg-zinc-200/70 text-zinc-700 px-2 py-0.5 rounded">beforeend</span>
+                </div>
+                <p class="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+                  Requests <code class="font-mono text-[11px]">/builtin/element</code>. Appends the returned HTML fragment inside this card's response container, while an out-of-band banner updates in the dedicated banner box below.
+                </p>
+                <!-- Dedicated In-Card Response Target -->
+                <div id="append_element_container" class="mt-3 space-y-2"></div>
+                <!-- Dedicated OOB Swap Target -->
+                <div id="message" class="mt-2 empty:hidden"></div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-zinc-200/60 flex justify-end">
+                <button hx-get="/builtin/element" hx-target="#append_element_container" hx-swap="beforeend" class="h-9 px-4 bg-zinc-900 text-white text-xs font-medium rounded-lg hover:bg-zinc-800 transition">
+                  Append New Element
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 2B: Selective Query & Multi-Target Swap -->
+            <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-semibold text-zinc-900">Selective Query & Multi-Target</h3>
+                  <span class="text-[11px] font-mono bg-zinc-200/70 text-zinc-700 px-2 py-0.5 rounded">hx-select-oob</span>
+                </div>
+                <p class="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+                  <strong>Select Div:</strong> Pulls only <code class="font-mono text-[11px]">#select_div</code> from the server and inserts it into this card.<br/>
+                  <strong>Multi-Target:</strong> Updates the main page title (<code class="font-mono text-[11px]">#select_h1</code>) and transforms this button into a badge.
+                </p>
+                <!-- Dedicated In-Card Response Target -->
+                <div id="select_div_container" class="mt-3 space-y-2"></div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-zinc-200/60 flex items-center justify-end gap-2">
+                <button hx-get="/builtin/select_element" hx-select="#select_div" hx-target="#select_div_container" hx-swap="beforeend" class="h-9 px-4 bg-zinc-200 text-zinc-800 text-xs font-medium rounded-lg hover:bg-zinc-300 transition">
+                  Select Div
+                </button>
+                <button id="select_button_oob" hx-get="/builtin/select_element_oob" hx-select="#select_button_oob" hx-select-oob="#select_h1,#p1:innerHTML" class="h-9 px-4 bg-zinc-200 text-zinc-800 text-xs font-medium rounded-lg hover:bg-zinc-300 transition">
+                  Multi-Target OOB
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 2C: Include External Form Values -->
+            <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-semibold text-zinc-900">Include External Inputs</h3>
+                  <span class="text-[11px] font-mono bg-zinc-200/70 text-zinc-700 px-2 py-0.5 rounded">hx-include</span>
+                </div>
+                <p class="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+                  Submits a POST request to <code class="font-mono text-[11px]">/builtin/include</code> incorporating values from the number input via <code class="font-mono text-[11px]">hx-include</code>.
+                </p>
+                <div id="include_response_container" class="mt-3"></div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-zinc-200/60 flex items-center justify-between gap-2">
+                <input id="include_input" name="include_input" type="number" value="10" class="h-9 w-24 px-3 border border-zinc-300 rounded-lg text-xs font-mono focus:ring-1 focus:ring-sky-500 focus:outline-none" />
+                <button hx-post="/builtin/include" hx-include="#include_input" hx-target="#include_response_container" class="h-9 px-4 bg-sky-600 text-white text-xs font-medium rounded-lg hover:bg-sky-700 transition">
+                  Submit Payload
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 2D: Keyboard Reactive Trigger -->
+            <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-semibold text-zinc-900">Reactive Keyup Stream</h3>
+                  <span class="text-[11px] font-mono bg-zinc-200/70 text-zinc-700 px-2 py-0.5 rounded">hx-vals</span>
+                </div>
+                <p class="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+                  Evaluates client-side JS parameters on keypress (<code class="font-mono text-[11px]">hx-vals="js:{...}"</code>) and transmits keystrokes dynamically to the server.
+                </p>
+                <div id="vals_stream_output" class="mt-3 bg-white border border-zinc-200 rounded-lg p-2.5 text-xs text-zinc-600 font-mono h-16 overflow-y-auto space-y-1">
+                  <span class="text-zinc-400 italic">Type in the box below to see stream...</span>
+                </div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-zinc-200/60">
+                <div hx-get="/builtin/vals_example" hx-trigger="keyup" hx-target="#vals_stream_output" hx-swap="beforeend" hx-vals='js:{lastKey: event.key, extra_info: "valid"}'>
+                  <input type="text" placeholder="Type here to stream keys..." class="h-9 w-full px-3 border border-zinc-300 rounded-lg text-xs focus:ring-1 focus:ring-sky-500 focus:outline-none" />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- SECTION 3: REAL-TIME COMMUNICATION CHANNELS -->
+        <!-- ============================================================== -->
+        <section class="bg-white rounded-xl border border-zinc-200/80 shadow-sm p-6 sm:p-7">
+          <div class="border-b border-zinc-100 pb-4 mb-5">
+            <h2 class="text-lg font-bold text-zinc-900">3. Real-Time Communication Channels</h2>
+            <p class="text-xs sm:text-sm text-zinc-500 mt-1">
+              Live server-to-client updates via Server-Sent Events (SSE) and full-duplex bi-directional WebSockets.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Server-Sent Events -->
+            <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-semibold text-zinc-900">Server-Sent Events (SSE)</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">Live</span>
+                </div>
+                <p class="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+                  Connected to <code class="font-mono text-[11px]">/extensions/stream</code>. The server pushes updates automatically every second without page polling.
+                </p>
+                <div hx-ext="sse" sse-connect="/extensions/stream" sse-swap="sse_event" class="mt-3 p-3 bg-white rounded-lg border border-zinc-200 text-xs font-mono text-zinc-700 min-h-[44px] flex items-center justify-center">
+                  Waiting for incoming stream...
+                </div>
+              </div>
+            </div>
+
+            <!-- WebSockets -->
+            <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-semibold text-zinc-900">Interactive WebSocket Chat</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-sky-50 text-sky-700 border border-sky-200">Bi-directional</span>
+                </div>
+                <p class="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+                  Connected to <code class="font-mono text-[11px]">/extensions/ws</code>. Messages sent broadcast immediately to all connected clients and append below.
+                </p>
+                <div hx-ext="ws" ws-connect="/extensions/ws" class="mt-3 space-y-3">
+                  <div id="content" class="bg-white border border-zinc-200 rounded-lg p-3 text-xs text-zinc-600 h-20 overflow-y-auto font-mono space-y-1"></div>
+                  <form ws-send class="flex gap-2">
+                    <input id="web_socket_input" name="chat_message" placeholder="Type a message and press enter..." class="h-9 flex-1 px-3 border border-zinc-300 rounded-lg text-xs focus:ring-1 focus:ring-sky-500 focus:outline-none" />
+                    <button type="submit" class="h-9 px-4 bg-zinc-900 text-white rounded-lg text-xs font-medium hover:bg-zinc-800 transition">Send</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- SECTION 4: UI FEEDBACK, CONFIRMATIONS & STATE -->
+        <!-- ============================================================== -->
+        <section class="bg-white rounded-xl border border-zinc-200/80 shadow-sm p-6 sm:p-7">
+          <div class="border-b border-zinc-100 pb-4 mb-5">
+            <h2 class="text-lg font-bold text-zinc-900">4. UI Feedback, Confirmations & State</h2>
+            <p class="text-xs sm:text-sm text-zinc-500 mt-1">
+              Native browser confirmations, modal dialogs with SweetAlert2, and simulated async loading delays.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <!-- Native confirm -->
+            <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100 flex flex-col justify-between">
+              <div>
+                <h3 class="text-xs font-semibold text-zinc-900 uppercase tracking-wide">Native Confirmation</h3>
+                <p class="text-xs text-zinc-500 mt-1.5 leading-relaxed">Triggers standard browser dialog before firing DELETE request.</p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-zinc-200/60">
+                <button id="button_delete" hx-delete="/" hx-swap="outerHTML swap:1s" hx-confirm="Are you sure you wish to delete your account?" class="h-9 w-full px-4 bg-rose-50 text-rose-700 border border-rose-200 text-xs font-medium rounded-lg hover:bg-rose-100 transition">
+                  Confirm Delete Action
+                </button>
+              </div>
+            </div>
+
+            <!-- SweetAlert2 confirm -->
+            <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100 flex flex-col justify-between">
+              <div>
+                <h3 class="text-xs font-semibold text-zinc-900 uppercase tracking-wide">SweetAlert2 Modal</h3>
+                <p class="text-xs text-zinc-500 mt-1.5 leading-relaxed">Rich promise-based confirmation popup before dispatching HTMX event.</p>
+                <div id="sweetalert_response" class="mt-2 text-xs text-emerald-600 font-medium"></div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-zinc-200/60">
+                <button id="sweet_alert_button" hx-get="/extensions/sweet_alert_confirmed" hx-target="#sweetalert_response" hx-trigger="confirmed" onClick="Swal.fire({title: 'Confirm Action', text: 'Do you want to proceed?', icon: 'question', confirmButtonColor: '#0284c7', cancelButtonColor: '#ef4444', showCancelButton: true}).then(function(result){ if(result.isConfirmed){ htmx.trigger(htmx.find('#sweet_alert_button'), 'confirmed'); } })" class="h-9 w-full px-4 bg-sky-600 text-white text-xs font-medium rounded-lg shadow-sm hover:bg-sky-700 transition">
+                  Open Custom Modal
+                </button>
+              </div>
+            </div>
+
+            <!-- Loading states -->
+            <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100 flex flex-col justify-between">
+              <div>
+                <h3 class="text-xs font-semibold text-zinc-900 uppercase tracking-wide">Async Loading Delay</h3>
+                <p class="text-xs text-zinc-500 mt-1.5 leading-relaxed">Simulates 5s delay while auto-disabling the trigger button.</p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-zinc-200/60">
+                <div data-loading-states data-loading-target="loading_states_span" class="flex items-center gap-2">
+                  <button hx-post="/extensions/loading_states" data-loading-disable class="h-9 px-4 bg-zinc-900 text-white text-xs font-medium rounded-lg hover:bg-zinc-800 disabled:opacity-50 transition">
+                    Simulate Delay
+                  </button>
+                  <span id="loading_states_span" data-loading data-loading-class="opacity-50 blur-sm" class="text-xs text-zinc-500 italic">Idle</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- SECTION 5: JINJA2 TEMPLATING FEATURES -->
+        <!-- ============================================================== -->
+        <section class="bg-white rounded-xl border border-zinc-200/80 shadow-sm p-6 sm:p-7">
+          <div class="border-b border-zinc-100 pb-4 mb-5">
+            <h2 class="text-lg font-bold text-zinc-900">5. Jinja2 Templating & Directory Evaluation</h2>
+            <p class="text-xs sm:text-sm text-zinc-500 mt-1">
+              Demonstrates conditional branch rendering, component includes (<code class="font-mono text-xs">extra_html.html</code>), and loop iteration.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Conditional Branching & Include -->
+            <div class="space-y-4">
+              <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100">
+                <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider block mb-2">Evaluated Conditions:</span>
+                {% if bool_condition1 %}
+                  <div class="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 p-2.5 rounded-lg">Condition 1 evaluates to TRUE (preempts 2 & 3)</div>
+                {% elif bool_condition2 %}
+                  <div class="text-xs font-semibold text-sky-700 bg-sky-50 border border-sky-200 p-2.5 rounded-lg">Condition 2 evaluates to TRUE (preempts 3)</div>
+                {% elif bool_condition3 %}
+                  <div class="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 p-2.5 rounded-lg">Condition 3 evaluates to TRUE</div>
+                {% else %}
+                  <div class="text-xs font-semibold text-zinc-600 bg-zinc-100 border border-zinc-200 p-2.5 rounded-lg">All conditions evaluated to FALSE</div>
+                {% endif %}
+                <p class="text-[11px] text-zinc-400 mt-2 font-mono">Booleans: ({{ bool_condition1 }}, {{ bool_condition2 }}, {{ bool_condition3 }})</p>
+              </div>
+
+              <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100 text-xs text-zinc-600">
+                <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider block mb-1.5">Jinja2 Template Include:</span>
+                {% include "extra_html.html" %}
+              </div>
+            </div>
+
+            <!-- Directory Table -->
+            <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100">
+              <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider block mb-2">Rendered Data List:</span>
+              <ul class="divide-y divide-zinc-200 bg-white border border-zinc-200 rounded-lg overflow-hidden shadow-sm">
+                {% for person in some_list %}
+                <li class="px-4 py-2.5 flex items-center justify-between hover:bg-zinc-50/80 transition text-xs">
+                  <span class="font-medium text-zinc-900">{{ person.name }}</span>
+                  <span class="text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded text-[11px] font-mono">{{ person.age }} yrs old</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- SECTION 6: ADVANCED REQUEST CONTROLS & SYNCHRONIZATION -->
+        <!-- ============================================================== -->
+        <section class="bg-white rounded-xl border border-zinc-200/80 shadow-sm p-6 sm:p-7">
+          <div class="border-b border-zinc-100 pb-4 mb-5">
+            <h2 class="text-lg font-bold text-zinc-900">6. Advanced Request Controls & Synchronization</h2>
+            <p class="text-xs sm:text-sm text-zinc-500 mt-1">
+              Comprehensive examples of request gating, queue synchronization, header-based routing, and server-emitted events.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Card 6A: State Gated Text Generator -->
+            <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-semibold text-zinc-900">Server-Gated Text Generator</h3>
+                  <span class="text-[11px] font-mono bg-zinc-200/70 text-zinc-700 px-2 py-0.5 rounded">Gated Action</span>
+                </div>
+                <p class="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+                  <strong>How it works:</strong> This is a server permission gate. When disabled, button 2 returns <code class="font-mono text-[11px]">204 No Content</code>. Click <strong>"1. Toggle Permission"</strong> first, then click <strong>"2. Generate Random Text"</strong> to allow the server to return text.
+                </p>
+                <div class="mt-3 p-3 bg-white border border-zinc-200 rounded-lg flex items-center justify-between min-h-[44px]">
+                  <span class="text-xs text-zinc-400">Server output:</span>
+                  <span id="response_span_text_to_edit" class="text-xs font-semibold text-sky-600 font-mono">Example Text Here</span>
+                </div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-zinc-200/60 flex items-center gap-2">
+                <button hx-post="/builtin/response_allow" class="h-9 px-4 bg-zinc-200 text-zinc-800 rounded-lg text-xs font-medium hover:bg-zinc-300 transition">
+                  1. Toggle Permission
+                </button>
+                <button id="response_change_button" hx-post="/builtin/response_change" hx-target="#response_span_text_to_edit" class="h-9 px-4 bg-sky-600 text-white rounded-lg text-xs font-medium hover:bg-sky-700 transition">
+                  2. Generate Random Text
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 6B: Header-Based Trigger Detection -->
+            <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-semibold text-zinc-900">Header Verification (<code class="font-mono text-xs">HX-Trigger</code>)</h3>
+                  <span class="text-[11px] font-mono bg-zinc-200/70 text-zinc-700 px-2 py-0.5 rounded">Inspection</span>
+                </div>
+                <p class="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+                  <strong>How it works:</strong> Three buttons request the same endpoint (<code class="font-mono text-[11px]">/builtin/htmx_headers</code>). Only button <strong>Y</strong> sends the registered ID expected by the backend header check.
+                </p>
+                <div class="mt-3 p-3 bg-white border border-zinc-200 rounded-lg flex items-center justify-between min-h-[44px]">
+                  <span class="text-xs text-zinc-400">Response:</span>
+                  <span id="header_verification_result" class="text-xs font-medium text-emerald-600"></span>
+                  <img id="spinner" class="htmx-indicator h-4 w-4" src="/static/img/spinning-circle.gif" alt="In flight..."/>
+                </div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-zinc-200/60 flex items-center gap-2">
+                <button hx-get="/builtin/htmx_headers" hx-target="#header_verification_result" hx-indicator="#spinner" class="h-9 flex-1 bg-zinc-200 text-zinc-800 rounded-lg text-xs font-medium hover:bg-zinc-300 transition">
+                  Button X
+                </button>
+                <button id="htmx_header_button_id" hx-get="/builtin/htmx_headers" hx-target="#header_verification_result" hx-indicator="#spinner" class="h-9 flex-1 bg-sky-600 text-white rounded-lg text-xs font-medium hover:bg-sky-700 transition">
+                  Button Y (Valid)
+                </button>
+                <button hx-get="/builtin/htmx_headers" hx-target="#header_verification_result" hx-indicator="#spinner" class="h-9 flex-1 bg-zinc-200 text-zinc-800 rounded-lg text-xs font-medium hover:bg-zinc-300 transition">
+                  Button Z
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 6C: Request Synchronization & Queuing -->
+            <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-semibold text-zinc-900">Request Queue Synchronization</h3>
+                  <span class="text-[11px] font-mono bg-zinc-200/70 text-zinc-700 px-2 py-0.5 rounded">hx-sync</span>
+                </div>
+                <p class="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+                  <strong>How it works:</strong> Both buttons simulate slow (2-second) operations. <code class="font-mono text-[11px]">hx-sync="this:queue last"</code> guarantees requests are sequenced cleanly without race conditions.
+                </p>
+                <div class="mt-3 p-3 bg-white border border-zinc-200 rounded-lg flex items-center justify-between min-h-[44px]">
+                  <span class="text-xs text-zinc-400">Winner:</span>
+                  <span id="sync_result" class="text-xs font-mono font-medium text-zinc-700 italic">Click one or both buttons quickly</span>
+                </div>
+              </div>
+              <div hx-target="#sync_result" hx-sync="this:queue last" class="mt-4 pt-3 border-t border-zinc-200/60 flex items-center gap-2">
+                <button hx-get="/builtin/sync_first" class="h-9 flex-1 bg-zinc-200 text-zinc-800 rounded-lg text-xs font-medium hover:bg-zinc-300 transition">
+                  Sync Button 1
+                </button>
+                <button hx-get="/builtin/sync_second" class="h-9 flex-1 bg-zinc-200 text-zinc-800 rounded-lg text-xs font-medium hover:bg-zinc-300 transition">
+                  Sync Button 2
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 6D: Server-Emitted Custom Event Counter -->
+            <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-semibold text-zinc-900">Server Event Counter</h3>
+                  <span class="text-[11px] font-mono bg-zinc-200/70 text-zinc-700 px-2 py-0.5 rounded">Event Emitter</span>
+                </div>
+                <p class="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+                  <strong>How it works:</strong> The button increments an internal counter on the server. On exactly the 5th click, the server returns an <code class="font-mono text-[11px]">HX-Trigger: server_event_triggered</code> header that awakens the target listener below.
+                </p>
+                <div id="event_triggered_div" class="mt-3 p-3 bg-white border border-zinc-200 rounded-lg flex items-center justify-center min-h-[44px]">
+                  <span hx-get="/builtin/sync_first" hx-trigger="server_event_triggered from:closest div" hx-indicator="next img" class="text-xs text-zinc-600 font-medium text-center">
+                    Awaiting 5 clicks to activate...
+                  </span>
+                </div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-zinc-200/60">
+                <button hx-get="/builtin/server_event_trigger" class="h-9 w-full px-4 bg-sky-600 text-white rounded-lg text-xs font-medium hover:bg-sky-700 transition flex items-center justify-center gap-2">
+                  <span>Click to Increment Server Counter</span>
+                  <img class="my-indicator-custom h-3 w-3" src="/static/img/spinning-circle.gif" alt="Loading..."/>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 6E: CSS Class Animation Tools & Timed Auto-Removal -->
+            <div class="p-5 rounded-lg bg-zinc-50/75 border border-zinc-100 flex flex-col justify-between md:col-span-2">
+              <div>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-semibold text-zinc-900">Lifecycle Transitions & Auto-Dismissal</h3>
+                  <span class="text-[11px] font-mono bg-zinc-200/70 text-zinc-700 px-2 py-0.5 rounded">Extensions</span>
+                </div>
+                <p class="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+                  Demonstrates extensions for declarative animation sequences (<code class="font-mono text-[11px]">class-tools</code>), transient self-dismissing elements (<code class="font-mono text-[11px]">remove-me</code>), and client-side lifecycle hook chaining.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-zinc-200/60 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="h-9 demo px-3 bg-zinc-100 border border-zinc-200 rounded-lg text-xs text-zinc-800 font-medium cursor-pointer hover:bg-zinc-200 transition flex items-center justify-center" classes="toggle opacity-50:1s & toggle text-red-600:1s">
+                  Toggle Color & Opacity
+                </div>
+                <div class="h-9 text-xs text-amber-800 bg-amber-50 rounded-lg border border-amber-200 flex items-center justify-center font-medium" remove-me="10s">
+                  Dismisses in 10 seconds
+                </div>
+                <button hx-get="/builtin/info" hx-on::before-request="console.log(event);" hx-on::after-request="htmx.addClass(this, 'text-sky-600', 2000); htmx.remove(this, 3000); htmx.removeClass(this, 'text-red-600', 1000)" class="h-9 px-3 bg-zinc-100 border border-zinc-200 text-red-600 text-xs font-medium rounded-lg hover:bg-zinc-200 transition text-center flex items-center justify-center">
+                  Trigger Lifecycle Chaining
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
       </div>
+
+      <!-- Footer -->
+      <footer class="pt-6 border-t border-zinc-200 flex flex-col sm:flex-row justify-between items-center text-xs text-zinc-400 gap-3">
+        <div hx-ext="path-deps" class="flex items-center gap-2">
+          <span>Path Dependencies Extension:</span>
+          <button hx-post="/extensions/path_deps" hx-swap="none" class="text-sky-600 hover:underline font-medium">Trigger Invalidation</button>
+          <ul hx-get="/extensions/path_deps" hx-trigger="path-deps" path-deps="/extensions/path_deps" hx-swap="beforeend" class="flex gap-2"></ul>
+        </div>
+        <p>Built with FastAPI, Jinja2 & HTMX</p>
+      </footer>
+
     </div>
-    <p></p>
-    <!-- Use of hx-ws to connect to a web socket -->
-    <div hx-ext="ws" ws-connect="/extensions/ws">
-      <form ws-send>
-        <input
-          id="web_socket_input"
-          name="chat_message"
-          placeholder="Web Socket Phrase"
-        />
-      </form>
-      <div id="content"></div>
-    </div>
-    <p></p>
-    <!-- Use of empty response on a message -->
-    <button hx-post="/builtin/response_allow">Allow changes</button>
-    <button
-      id="response_change_button"
-      hx-post="/builtin/response_change"
-      hx-target="#response_span_text_to_edit"
-    >
-      Change Text
-    </button>
-    <span id="response_span_text_to_edit">Example Text Here</span>
-    <p></p>
-    <!-- Use of loading-states extension -->
-    <div data-loading-states data-loading-target="loading_states_span">
-      <button hx-post="/extensions/loading_states" data-loading-disable>
-        Refresh
-      </button>
-      <span id="loading_states_span" data-loading data-loading-class="red"
-        >Refresh</span
-      >
-    </div>
-    <form
-      hx-post="/extensions/loading_states"
-      data-loading-target="#loading"
-      data-loading-states
-    >
-      <button type="submit" data-loading-delay="1000" data-loading-disable>
-        State Submit
-      </button>
-      <div id="loading" data-loading data-loading-class="red">Loading ...</div>
-    </form>
-    <p></p>
-    <!-- Use of path-deps extension -->
-    <div hx-ext="path-deps">
-      <button hx-post="/extensions/path_deps" hx-swap="none">
-        Post To List
-      </button>
-      <ul
-        hx-get="/extensions/path_deps"
-        hx-trigger="path-deps"
-        path-deps="/extensions/path_deps"
-        hx-swap="beforeend"
-      ></ul>
-    </div>
-    <p></p>
-    <!-- Use of preload extension -->
-    <div data-loading-states>
-      <button hx-get="/extensions/loading_states" preload="mousedown">
-        Click me for preload
-      </button>
-    </div>
-    <p></p>
-    <!-- Use of remove-me extension -->
-    <div remove-me="10s">I will be gone after 10 seocnds have passed</div>
-    <p remove-me="10s"></p>
-    <!-- Use of hx-on:* to execute javascript code on particular HTMX events -->
-    <button
-      hx-get="/builtin/info"
-      hx-on::before-request="console.log(event);"
-      hx-on::after-request="htmx.addClass(this, 'blue',2000); htmx.remove(this,3000); htmx.removeClass(this,'red',1000)"
-      class="red"
-    >
-      Get Info!
-    </button>
   </body>
 </html>
-<p></p>
-<!-- Button to confirm action with SweetAlert2 -->
-<button
-  id="sweet_alert_button"
-  hx-get="/extensions/sweet_alert_confirmed"
-  hx-trigger="confirmed"
-  onClick="Swal.fire({title: 'Confirm', text:'Do you want to continue?'}).then(function(result){
-            console.log(result);
-            if(result.isConfirmed){
-              htmx.trigger(htmx.find('#sweet_alert_button'), 'confirmed');  
-            } 
-        })"
->
-  Click Me
-</button>
-
-<!-- Jinja2 template syntax -->
-{% if bool_condition1 %}
-<div>
-  <p>Condition 1 overwrites both 2 and 3</p>
-</div>
-{% elif bool_condition2 %}
-<div>
-  <p>Condition 2 only overwrites 3</p>
-</div>
-{% elif bool_condition3 %}
-<div>
-  <p>Condition 3 is being triggered if both 1 and 2 are false</p>
-</div>
-{% else %}
-<div>
-  <p>None of the conditions are being triggered</p>
-</div>
-{% endif %}
-<p>
-  Index Variables: {{ bool_condition1 }}/{{ bool_condition2 }}/{{
-  bool_condition3 }}
-</p>
-
-{% include "extra_html.html" %}
-
-<p>List of people below:</p>
-<ul>
-  {% for person in some_list %}
-  <li>{{ person.name }} is {{ person.age }} years old</li>
-  {% endfor %}
-</ul>
-
-<!-- hx-indicator example -->
-<div>
-  <span>Only one button will trigger</span>
-  <button
-    hx-get="/builtin/htmx_headers"
-    hx-target="next span"
-    hx-indicator="#spinner"
-  >
-    X
-  </button>
-  <button
-    id="htmx_header_button_id"
-    hx-get="/builtin/htmx_headers"
-    hx-target="next span"
-    hx-indicator="#spinner"
-  >
-    Y
-  </button>
-  <button
-    hx-get="/builtin/htmx_headers"
-    hx-target="next span"
-    hx-indicator="#spinner"
-  >
-    Z
-  </button>
-  <img
-    id="spinner"
-    class="htmx-indicator"
-    src="/static/img/spinning-circle.gif"
-    alt="Request In Flight..."
-    style="height: 21px"
-  />
-  <span class="red"></span>
-</div>
-
-<!-- File download example -->
-<a hx-boost="false" href="/builtin/file_download" download="surprise_party.png"
-  >Archive Ready! Click here to download. &downarrow;</a
->
-
-<!-- Requests synchronization example -->
-<p></p>
-<div hx-target="next span" hx-sync="this:queue last">
-  <button hx-get="/builtin/sync_first">First Button</button>
-  <button hx-get="/builtin/sync_second">Second Button</button>
-  <span>Who will target me correctly?</span>
-</div>
-
-<!-- Trigger event from the server -->
-<p></p>
-<div id="event_triggered_div">
-  <button hx-get="/builtin/server_event_trigger">
-    Server will trigger event
-    <img
-      class="my-indicator-custom"
-      src="/static/img/spinning-circle.gif"
-      alt="Request In Flight..."
-    />
-  </button>
-  <span
-    hx-get="/builtin/sync_first"
-    hx-trigger="server_event_triggered from:closest div"
-    hx-indicator="previous img"
-    >The server will trigger me after 5 clicks!</span
-  >
-</div>

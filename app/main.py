@@ -4,6 +4,8 @@ import sys
 import uvicorn  # Uvicorn ASGI server for FastAPI
 from fastapi import FastAPI, Request  # FastAPI framework
 from fastapi.staticfiles import StaticFiles  # To serve static files
+from fastapi.responses import JSONResponse  # Standardized JSON error response
+import traceback
 
 # Adding the parent directory of the current script to the system path
 # This allows importing modules from the parent directory
@@ -14,7 +16,29 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.routers import builtin, extensions, root
 
 # Initializing the FastAPI application
-app = FastAPI()
+app = FastAPI(
+    title="High-Performance Backend",
+    description="Refactored and modernized API architecture.",
+    version="1.0.0"
+)
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """
+    Global exception handler to catch unhandled errors and return a standardized JSON response.
+    Never exposes stack traces to the client in production.
+    """
+    # For a real production app, we would log the traceback here instead of exposing it
+    # logger.error(traceback.format_exc())
+    return JSONResponse(
+        status_code=500,
+        content={
+            "status": "error",
+            "message": "An unexpected error occurred.",
+            "code": 500
+        },
+    )
 
 
 @app.middleware("http")

@@ -54,14 +54,14 @@ async def message_stream(request: Request) -> EventSourceResponse:
             if count % 1 == 0:
                 yield {
                     "event": "sse_event",
-                    "data": f"<div>SSE Content right here boys {count}</div>",
+                    "data": f"<div>Live Stream Update #{count}</div>",
                 }
 
             # Every 10 counts, send a special message
             if count % 10 == 0:
                 yield {
                     "event": "sse_event_10",
-                    "data": f"<div>SSE 10 Content right here boys {int(count/10)}</div>",
+                    "data": f"<div>Milestone Event: Batch #{int(count/10)} reached</div>",
                 }
 
             # Sleep for 1 second before sending the next message
