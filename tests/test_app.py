@@ -184,7 +184,7 @@ async def test_message_stream():
     # Test first event
     item1 = await anext(iterator)
     assert item1['event'] == 'sse_event'
-    assert item1['data'] == '<div>SSE Content right here boys 1</div>'
+    assert item1['data'] == '<div>Live Stream Update #1</div>'
 
     # Test disconnecting stops generator
     request.disconnected = True
@@ -217,16 +217,16 @@ async def test_message_stream_special_message():
         for i in range(1, 10):
             item = await anext(iterator)
             assert item['event'] == 'sse_event'
-            assert item['data'] == f'<div>SSE Content right here boys {i}</div>'
+            assert item['data'] == f'<div>Live Stream Update #{i}</div>'
 
         # The 10th count yields two events: one for % 1 == 0, one for % 10 == 0
         item = await anext(iterator)
         assert item['event'] == 'sse_event'
-        assert item['data'] == '<div>SSE Content right here boys 10</div>'
+        assert item['data'] == '<div>Live Stream Update #10</div>'
 
         item = await anext(iterator)
         assert item['event'] == 'sse_event_10'
-        assert item['data'] == '<div>SSE 10 Content right here boys 1</div>'
+        assert item['data'] == '<div>Milestone Event: Batch #1 reached</div>'
 
         # Stop generator
         request.disconnected = True
